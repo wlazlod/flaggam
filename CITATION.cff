@@ -3,7 +3,6 @@ message: "If you use this software, please cite it as below and the papers it im
 title: "FlagGAM: rule-basis generalized additive models (from-scratch implementation)"
 version: "0.1.0"
 license: Apache-2.0
-repository-code: "https://github.com/danielwlazlo/flag-gam"
 abstract: >
   A from-scratch Python implementation of FlagGAM (Zhao & Welsch, 2026) and the
   Univariate Flagging Algorithm (Sheth et al., 2019).  The package provides
@@ -12,10 +11,10 @@ abstract: >
 
 references:
   - type: article
-    title: "FlagGAM: Rule-Basis Generalized Additive Models"
+    title: "FlagGAM: Rule-Basis Generalized Additive Models for Explainable Tabular Prediction"
     authors:
       - family-names: Zhao
-        given-names: Xiaoxiao
+        given-names: Z.
       - family-names: Welsch
         given-names: Roy E.
     year: 2026
@@ -26,12 +25,12 @@ references:
 
   - type: article
     title: >
-      A univariate flagging algorithm for identifying patterns in clinical data
+      The Univariate Flagging Algorithm (UFA): An interpretable approach for predictive modeling
     authors:
       - family-names: Sheth
-        given-names: Maulik
+        given-names: Mallory
       - family-names: Gerovitch
-        given-names: Andrew
+        given-names: A.
       - family-names: Welsch
         given-names: Roy E.
       - family-names: Markuzon
