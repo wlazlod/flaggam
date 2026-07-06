@@ -39,3 +39,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+    # parametrize_with_checks yields a generator; this is a sklearn issue, not ours.
+    "ignore::pytest.PytestRemovedIn10Warning",
+]

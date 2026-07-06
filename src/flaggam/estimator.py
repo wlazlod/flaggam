@@ -1,8 +1,12 @@
 """FlagGAMClassifier: sklearn-compatible estimator for rule-basis GAMs."""
 
+import warnings
+
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from scipy.sparse import issparse
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, TransformerMixin
+from sklearn.exceptions import DataConversionWarning
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
@@ -12,16 +16,45 @@ from .heads import AdditiveHead, FlexibleHead
 from .weighting import compact_scores, feature_weights
 
 
-class _BaseFlagGAM(BaseEstimator):
+class _BaseFlagGAM(TransformerMixin, BaseEstimator):
     """Shared X conversion, core/head assembly, transform."""
 
     def _to_frame(self, X, reset: bool) -> pd.DataFrame:
         if isinstance(X, pd.DataFrame):
             df = X
         else:
+            # Reject sparse upfront with an explicit message.
+            if issparse(X):
+                raise ValueError(
+                    "A sparse matrix was passed, but dense data is required. "
+                    "Use X.toarray() to convert to a dense numpy array."
+                )
             arr = np.asarray(X)
             if arr.ndim != 2:
-                raise ValueError("X must be 2-dimensional")
+                raise ValueError(
+                    "Expected 2D array, got 1D array instead. "
+                    "Reshape your data either using array.reshape(-1, 1) "
+                    "if your data has a single feature or array.reshape(1, -1) "
+                    "if it contains a single sample."
+                )
+            # Reject complex dtypes with sklearn's standard message.
+            if arr.dtype.kind == "c":
+                raise ValueError(f"Complex data not supported\n{arr}\n")
+            if reset and arr.shape[0] == 0:
+                raise ValueError(
+                    "0 sample(s) (shape=(0, {})) were passed while a minimum of 1 is "
+                    "required.".format(arr.shape[1])
+                )
+            if reset and arr.shape[1] == 0:
+                raise ValueError(
+                    "0 feature(s) (shape=({}, 0)) while a minimum of 1 is "
+                    "required.".format(arr.shape[0])
+                )
+            if not reset and arr.shape[1] != self.n_features_in_:
+                raise ValueError(
+                    f"X has {arr.shape[1]} features, but {type(self).__name__} is expecting "
+                    f"{self.n_features_in_} features as input"
+                )
             df = pd.DataFrame(arr, columns=[f"x{i}" for i in range(arr.shape[1])])
             cat = self.categorical_features or []
             cat_col_names = [
@@ -31,11 +64,23 @@ class _BaseFlagGAM(BaseEstimator):
                 df[col] = pd.Categorical(df[col])
             for col in df.columns:
                 if col not in cat_col_names:
-                    df[col] = pd.to_numeric(df[col], errors="raise")
+                    try:
+                        df[col] = pd.to_numeric(df[col], errors="raise")
+                    except (ValueError, TypeError):
+                        # Walk the column so float() produces the sklearn-expected
+                        # message: "float() argument must be a string or a real number"
+                        for v in df[col]:
+                            float(v)
+                        raise  # pragma: no cover
         if reset:
             self.feature_names_in_ = np.asarray(df.columns, dtype=object)
             self.n_features_in_ = df.shape[1]
         else:
+            if df.shape[1] != self.n_features_in_:
+                raise ValueError(
+                    f"X has {df.shape[1]} features, but {type(self).__name__} is expecting "
+                    f"{self.n_features_in_} features as input"
+                )
             missing = set(self.feature_names_in_) - set(df.columns)
             if missing:
                 raise ValueError(f"X is missing fitted columns: {sorted(missing)}")
@@ -115,6 +160,14 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
     def fit(self, X, y):
         """Discover flag bases, fit head on Z(X)."""
         df = self._to_frame(X, reset=True)
+        if y is None:
+            raise ValueError("requires y to be passed, but the target y is None")
+        y = np.asarray(y)
+        if len(df) != len(y):
+            raise ValueError(
+                f"Found input variables with inconsistent numbers of samples: "
+                f"[{len(df)}, {len(y)}]"
+            )
         check_classification_targets(y)
         self.label_encoder_ = LabelEncoder().fit(y)
         self.classes_ = self.label_encoder_.classes_
@@ -216,7 +269,24 @@ class FlagGAMRegressor(RegressorMixin, _BaseFlagGAM):
     def fit(self, X, y):
         """Discover flag bases, fit regression head on Z(X)."""
         df = self._to_frame(X, reset=True)
-        y = np.asarray(y, dtype=float).ravel()
+        if y is None:
+            raise ValueError("requires y to be passed, but the target y is None")
+        y = np.asarray(y)
+        if y.dtype.kind == "c":
+            raise ValueError(f"Complex data not supported\n{y}\n")
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was expected. "
+                "Please change the shape of y to (n_samples,), for example using ravel().",
+                DataConversionWarning,
+                stacklevel=2,
+            )
+        y = y.astype(float).ravel()
+        if len(df) != len(y):
+            raise ValueError(
+                f"Found input variables with inconsistent numbers of samples: "
+                f"[{len(df)}, {len(y)}]"
+            )
         if self.monotonic_constraints is not None:
             raise NotImplementedError("monotonic constraints ship in the extensions plan")
         if self.head == "flexible" and self.flexible_estimator is None:
