@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 
-from .bases import Basis, CategoryBasis, ThresholdBasis
+from .bases import Basis, CategoryBasis, HingeBasis, ThresholdBasis, TrendBasis
 from .missing import discover_missing_indicators
 from .screening import (
     bh_adjust,
@@ -15,7 +15,9 @@ from .screening import (
     compute_min_support,
     log_odds_ratio,
     risk_difference,
+    standardized_mean_difference,
     two_proportion_test,
+    welch_t_test,
 )
 
 logger = logging.getLogger(__name__)
@@ -173,17 +175,68 @@ class FlagCoreModule:
             if pa <= self.fdr_alpha
         ]
 
-    # ---- regression stubs (Task 5) -------------------------------------
+    # ---- numerical, regression -------------------------------------------
 
     def _discover_numerical_regression(
         self, col: str, x_obs: np.ndarray, y_obs: np.ndarray
     ) -> list[Basis]:
-        raise NotImplementedError("Numerical regression discovery is implemented in Task 5.")
+        mean = float(np.mean(x_obs))
+        out: list[Basis] = [
+            TrendBasis(
+                feature=col, mean=mean, support=len(x_obs), effect_size=float("nan"),
+                p_value=float("nan"), p_adj=float("nan"), enriched_class=None,
+            )
+        ]
+        rows = []  # (cutoff, side, support, p, smd)
+        for cutoff, side in self._candidate_cutoffs(x_obs):
+            tail = x_obs <= cutoff if side == "low" else x_obs >= cutoff
+            n_tail, n_base = int(tail.sum()), int((~tail).sum())
+            if n_tail < self.min_support_ or n_base < self.min_support_:
+                continue
+            p = welch_t_test(y_obs[tail], y_obs[~tail])
+            smd = standardized_mean_difference(y_obs[tail], y_obs[~tail])
+            rows.append((cutoff, side, n_tail, p, smd))
+        if not rows:
+            return out
+        p_adj = bh_adjust(np.array([r[3] for r in rows]))
+        for side in ("low", "high"):
+            sig = [(r, pa) for r, pa in zip(rows, p_adj) if r[1] == side and pa <= self.fdr_alpha]
+            if not sig:
+                continue
+            (cutoff, _, supp, p, smd), pa = max(sig, key=lambda t: (t[0][4], -t[0][3], -t[0][0]))
+            out.append(
+                HingeBasis(
+                    feature=col, cutoff=cutoff, side=side, support=supp,
+                    effect_size=smd, p_value=p, p_adj=float(pa), enriched_class=None,
+                )
+            )
+        return out
+
+    # ---- categorical, regression -----------------------------------------
 
     def _discover_categorical_regression(
         self, col: str, x_obs: np.ndarray, y_obs: np.ndarray
     ) -> list[Basis]:
-        raise NotImplementedError("Categorical regression discovery is implemented in Task 5.")
+        rows = []
+        for level in pd.unique(x_obs):
+            in_level = x_obs == level
+            n_in, n_out = int(in_level.sum()), int((~in_level).sum())
+            if n_in < self.min_support_ or n_out < self.min_support_:
+                continue
+            p = welch_t_test(y_obs[in_level], y_obs[~in_level])
+            smd = standardized_mean_difference(y_obs[in_level], y_obs[~in_level])
+            rows.append((level, n_in, p, smd))
+        if not rows:
+            return []
+        p_adj = bh_adjust(np.array([r[2] for r in rows]))
+        return [
+            CategoryBasis(
+                feature=col, level=level, support=n_in, effect_size=smd,
+                p_value=p, p_adj=float(pa), enriched_class=None,
+            )
+            for (level, n_in, p, smd), pa in zip(rows, p_adj)
+            if pa <= self.fdr_alpha
+        ]
 
     # ---- transform / metadata ------------------------------------------
 

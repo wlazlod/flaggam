@@ -65,3 +65,43 @@ def test_multiclass_runs(clf_data) -> None:
     y3 = np.where(rng.uniform(size=len(y)) < 0.2, 2, y)
     core = FlagCoreModule(task="multiclass").fit(X, y3)
     assert isinstance(core.bases_, list)
+
+
+@pytest.fixture()
+def reg_data() -> tuple[pd.DataFrame, np.ndarray]:
+    rng = np.random.default_rng(0)
+    n = 2000
+    sqft = rng.normal(100, 20, n)
+    noise = rng.normal(0, 1, n)
+    zone = rng.choice(["a", "b", "c"], n)
+    hi = np.quantile(sqft, 0.8)
+    y = 0.05 * sqft + 2.0 * np.maximum(sqft - hi, 0) + 1.5 * (zone == "a") + rng.normal(0, 1, n)
+    X = pd.DataFrame({"sqft": sqft, "noise": noise, "zone": pd.Categorical(zone)})
+    return X, y
+
+
+def test_regression_discovery(reg_data) -> None:
+    X, y = reg_data
+    core = FlagCoreModule(task="regression").fit(X, y)
+    meta = core.metadata()
+    # Every numerical feature gets exactly one unconditional trend term.
+    assert ((meta.kind == "trend") & (meta.feature == "sqft")).sum() == 1
+    assert ((meta.kind == "trend") & (meta.feature == "noise")).sum() == 1
+    # High-side hinge on sqft is discovered; at most one per side.
+    assert ((meta.kind == "hinge_high") & (meta.feature == "sqft")).sum() == 1
+    for kind in ("hinge_low", "hinge_high"):
+        assert ((meta.kind == kind) & (meta.feature == "sqft")).sum() <= 1
+    # Enriched zone level found as a step basis.
+    assert "a" in set(meta.loc[meta.feature == "zone", "level"])
+    # Noise feature gets no hinge (trend only).
+    assert set(meta.loc[meta.feature == "noise", "kind"]) == {"trend"}
+
+
+def test_regression_transform_missing_is_zero(reg_data) -> None:
+    X, y = reg_data
+    core = FlagCoreModule(task="regression").fit(X, y)
+    Xm = X.copy()
+    Xm.loc[:, "sqft"] = np.nan
+    Zm = core.transform(Xm)
+    cols = [i for i, b in enumerate(core.bases_) if b.feature == "sqft"]
+    assert abs(Zm[:, cols].toarray()).sum() == 0.0
