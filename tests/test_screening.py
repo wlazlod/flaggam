@@ -14,9 +14,9 @@ from flaggam.screening import (
 
 
 def test_min_support_formula() -> None:
-    assert compute_min_support(100) == 20      # max(20, ceil(2)) = 20
-    assert compute_min_support(5000) == 100    # ceil(0.02*5000) = 100
-    assert compute_min_support(100_000) == 200 # capped at 200
+    assert compute_min_support(100) == 20  # max(20, ceil(2)) = 20
+    assert compute_min_support(5000) == 100  # ceil(0.02*5000) = 100
+    assert compute_min_support(100_000) == 200  # capped at 200
 
 
 def test_bh_adjust_matches_known_values() -> None:
@@ -41,7 +41,6 @@ def test_two_proportion_small_counts_uses_fisher() -> None:
     # Expected cell counts < 5 -> must route to Fisher's exact test.
     expected = float(stats.fisher_exact([[3, 3], [1, 7]], alternative="two-sided")[1])
     assert two_proportion_test(3, 6, 1, 8) == pytest.approx(expected, abs=1e-12)
-    # And differ from the z-test value it would otherwise return.
 
 
 def test_chi_square_multiclass() -> None:

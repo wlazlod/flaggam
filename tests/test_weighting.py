@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 
 from flaggam.bases import CategoryBasis, ThresholdBasis
-from flaggam.core import FlagCoreModule
 from flaggam.weighting import (
     compact_scores,
     correlation_ratio,
@@ -46,17 +45,16 @@ def test_compact_scores_counts_fired_flags() -> None:
     Z = sparse.csr_matrix(np.array([[1.0, 1.0], [0.0, 1.0]]))
     s_eq = compact_scores(Z, [b0, b1], classes=np.array([0, 1]), weights=None)
     np.testing.assert_array_equal(s_eq, [[1.0, 1.0], [1.0, 0.0]])
-    s_w = compact_scores(Z, [b0, b1], classes=np.array([0, 1]),
-                         weights={"age": 0.5, "purpose": 2.0})
+    s_w = compact_scores(
+        Z, [b0, b1], classes=np.array([0, 1]), weights={"age": 0.5, "purpose": 2.0}
+    )
     np.testing.assert_array_equal(s_w, [[2.0, 0.5], [2.0, 0.0]])
 
 
 def test_feature_weights_types(clf_data=None) -> None:
     rng = np.random.default_rng(0)
     n = 500
-    X = pd.DataFrame(
-        {"num": rng.normal(size=n), "cat": pd.Categorical(rng.choice(["a", "b"], n))}
-    )
+    X = pd.DataFrame({"num": rng.normal(size=n), "cat": pd.Categorical(rng.choice(["a", "b"], n))})
     y = (rng.uniform(size=n) < 0.3).astype(int)
     w = feature_weights(X, y, task="binary", numerical=["num"])
     assert set(w) == {"num", "cat"} and all(0.0 <= v <= 1.0 for v in w.values())

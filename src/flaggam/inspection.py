@@ -15,9 +15,7 @@ def export_rules(estimator) -> pd.DataFrame:
     head = estimator.head_
     if not isinstance(head, AdditiveHead) or head.coef_.size == 0:
         if not isinstance(head, AdditiveHead):
-            logger.warning(
-                "flexible head: additive interpretability is not preserved; weight=NaN"
-            )
+            logger.warning("flexible head: additive interpretability is not preserved; weight=NaN")
         meta["weight"] = np.nan
         meta["additive_interpretable"] = isinstance(head, AdditiveHead)
         return meta
@@ -50,18 +48,30 @@ def explain(estimator, X) -> pd.DataFrame:
     # TODO: vectorize if explain() becomes hot on large n
     for i in range(Z.shape[0]):
         k = target_row[i]
+        # k is always in bounds; min() kept as a cheap invariant guard
         records.append(
-            dict(row=i, feature="<intercept>", rule="<intercept>", value=1.0,
-                 contribution=float(intercept[min(k, len(intercept) - 1)]))  # k is always in bounds; min() kept as a cheap invariant guard
+            dict(
+                row=i,
+                feature="<intercept>",
+                rule="<intercept>",
+                value=1.0,
+                contribution=float(intercept[min(k, len(intercept) - 1)]),
+            )
         )
         for j, b in enumerate(bases):
             if Z[i, j] != 0.0:
                 records.append(
-                    dict(row=i, feature=b.feature, rule=b.name, value=float(Z[i, j]),
-                         contribution=float(coef[k, j] * Z[i, j]))
+                    dict(
+                        row=i,
+                        feature=b.feature,
+                        rule=b.name,
+                        value=float(Z[i, j]),
+                        contribution=float(coef[k, j] * Z[i, j]),
+                    )
                 )
     out = pd.DataFrame.from_records(records)
     return out.sort_values(
-        ["row", "contribution"], key=lambda s: s.abs() if s.name == "contribution" else s,
+        ["row", "contribution"],
+        key=lambda s: s.abs() if s.name == "contribution" else s,
         ascending=[True, False],
     ).reset_index(drop=True)

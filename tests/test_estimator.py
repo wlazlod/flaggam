@@ -17,9 +17,7 @@ def data() -> tuple[pd.DataFrame, np.ndarray]:
     purpose = rng.choice(["car", "tv", "edu"], n)
     logit = -1.5 + 2.0 * (age <= 30) - 1.0 * (income >= 70) + 1.5 * (purpose == "edu")
     y = (rng.uniform(size=n) < 1 / (1 + np.exp(-logit))).astype(int)
-    X = pd.DataFrame(
-        {"age": age, "income": income, "purpose": pd.Categorical(purpose)}
-    )
+    X = pd.DataFrame({"age": age, "income": income, "purpose": pd.Categorical(purpose)})
     return X, y
 
 
@@ -51,9 +49,9 @@ def test_ndarray_with_categorical_mask(data) -> None:
 
 def test_compact_representation(data) -> None:
     X, y = data
-    clf = FlagGAMClassifier(
-        representation="compact", feature_weighting="auto", random_state=0
-    ).fit(X, y)
+    clf = FlagGAMClassifier(representation="compact", feature_weighting="auto", random_state=0).fit(
+        X, y
+    )
     assert roc_auc_score(y, clf.predict_proba(X)[:, 1]) > 0.65
 
 
@@ -83,7 +81,7 @@ def test_missing_rows_no_evidence(data) -> None:
     X_missing = X.copy()
     X_missing.iloc[0, :] = [np.nan, np.nan, None]
     Z = clf.transform(X_missing)
-    assert Z[0].toarray().sum() == 0.0          # spec §14: zero contribution
+    assert Z[0].toarray().sum() == 0.0  # spec §14: zero contribution
     assert clf.predict_proba(X_missing).shape == (len(X), 2)
 
 
@@ -101,8 +99,12 @@ def reg_data() -> tuple[pd.DataFrame, np.ndarray]:
     n = 2000
     sqft = rng.normal(100, 20, n)
     zone = rng.choice(["a", "b", "c"], n)
-    y = 0.05 * sqft + 2.0 * np.maximum(sqft - np.quantile(sqft, 0.8), 0) \
-        + 1.5 * (zone == "a") + rng.normal(0, 1, n)
+    y = (
+        0.05 * sqft
+        + 2.0 * np.maximum(sqft - np.quantile(sqft, 0.8), 0)
+        + 1.5 * (zone == "a")
+        + rng.normal(0, 1, n)
+    )
     return pd.DataFrame({"sqft": sqft, "zone": pd.Categorical(zone)}), y
 
 
@@ -113,7 +115,7 @@ def test_regressor_fit_predict(reg_data) -> None:
     assert pred.shape == y.shape
     ss_res = ((y - pred) ** 2).sum()
     ss_tot = ((y - y.mean()) ** 2).sum()
-    assert 1 - ss_res / ss_tot > 0.5           # r2 well above baseline
+    assert 1 - ss_res / ss_tot > 0.5  # r2 well above baseline
     assert not hasattr(reg, "predict_proba")
 
 

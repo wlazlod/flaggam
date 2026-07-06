@@ -72,13 +72,16 @@ class FlagCoreModule:
 
     def _candidate_cutoffs(self, x_obs: np.ndarray) -> list[tuple[float, str]]:
         qs_low = np.arange(self.quantile_low[0], self.quantile_low[1] + 1e-9, self.quantile_step)
-        qs_high = np.arange(
-            self.quantile_high[0], self.quantile_high[1] + 1e-9, self.quantile_step
-        )
+        qs_high = np.arange(self.quantile_high[0], self.quantile_high[1] + 1e-9, self.quantile_step)
         cands = [(float(np.quantile(x_obs, q)), "low") for q in qs_low]
         cands += [(float(np.quantile(x_obs, q)), "high") for q in qs_high]
         seen: set[tuple[float, str]] = set()
-        return [c for c in cands if not (c in seen or seen.add(c))]
+        unique: list[tuple[float, str]] = []
+        for c in cands:
+            if c not in seen:
+                seen.add(c)
+                unique.append(c)
+        return unique
 
     def _discover_numerical(self, col: str, x: np.ndarray, y: np.ndarray) -> list[Basis]:
         obs = ~np.isnan(x)
@@ -101,7 +104,9 @@ class FlagCoreModule:
         out: list[Basis] = []
         for side in ("low", "high"):
             sig = [
-                (r, pa) for r, pa in zip(rows, p_adj) if r[1] == side and pa <= self.fdr_alpha
+                (r, pa)
+                for r, pa in zip(rows, p_adj, strict=False)
+                if r[1] == side and pa <= self.fdr_alpha
             ]
             if not sig:
                 continue
@@ -171,7 +176,7 @@ class FlagCoreModule:
                 p_adj=float(pa),
                 enriched_class=cls,
             )
-            for (level, n_in, p, eff, cls), pa in zip(rows, p_adj)
+            for (level, n_in, p, eff, cls), pa in zip(rows, p_adj, strict=False)
             if pa <= self.fdr_alpha
         ]
 
@@ -183,8 +188,13 @@ class FlagCoreModule:
         mean = float(np.mean(x_obs))
         out: list[Basis] = [
             TrendBasis(
-                feature=col, mean=mean, support=len(x_obs), effect_size=float("nan"),
-                p_value=float("nan"), p_adj=float("nan"), enriched_class=None,
+                feature=col,
+                mean=mean,
+                support=len(x_obs),
+                effect_size=float("nan"),
+                p_value=float("nan"),
+                p_adj=float("nan"),
+                enriched_class=None,
             )
         ]
         rows = []  # (cutoff, side, support, p, smd)
@@ -200,14 +210,24 @@ class FlagCoreModule:
             return out
         p_adj = bh_adjust(np.array([r[3] for r in rows]))
         for side in ("low", "high"):
-            sig = [(r, pa) for r, pa in zip(rows, p_adj) if r[1] == side and pa <= self.fdr_alpha]
+            sig = [
+                (r, pa)
+                for r, pa in zip(rows, p_adj, strict=False)
+                if r[1] == side and pa <= self.fdr_alpha
+            ]
             if not sig:
                 continue
             (cutoff, _, supp, p, smd), pa = max(sig, key=lambda t: (t[0][4], -t[0][3], -t[0][0]))
             out.append(
                 HingeBasis(
-                    feature=col, cutoff=cutoff, side=side, support=supp,
-                    effect_size=smd, p_value=p, p_adj=float(pa), enriched_class=None,
+                    feature=col,
+                    cutoff=cutoff,
+                    side=side,
+                    support=supp,
+                    effect_size=smd,
+                    p_value=p,
+                    p_adj=float(pa),
+                    enriched_class=None,
                 )
             )
         return out
@@ -231,10 +251,15 @@ class FlagCoreModule:
         p_adj = bh_adjust(np.array([r[2] for r in rows]))
         return [
             CategoryBasis(
-                feature=col, level=level, support=n_in, effect_size=smd,
-                p_value=p, p_adj=float(pa), enriched_class=None,
+                feature=col,
+                level=level,
+                support=n_in,
+                effect_size=smd,
+                p_value=p,
+                p_adj=float(pa),
+                enriched_class=None,
             )
-            for (level, n_in, p, smd), pa in zip(rows, p_adj)
+            for (level, n_in, p, smd), pa in zip(rows, p_adj, strict=False)
             if pa <= self.fdr_alpha
         ]
 

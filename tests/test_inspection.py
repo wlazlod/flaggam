@@ -20,8 +20,18 @@ def fitted() -> FlagGAMClassifier:
 def test_export_rules_columns_and_weights(fitted) -> None:
     clf, _ = fitted
     rules = clf.export_rules()
-    for col in ["feature", "kind", "rule", "cutoff", "level", "support",
-                "effect_size", "p_value", "p_adj", "weight"]:
+    for col in [
+        "feature",
+        "kind",
+        "rule",
+        "cutoff",
+        "level",
+        "support",
+        "effect_size",
+        "p_value",
+        "p_adj",
+        "weight",
+    ]:
         assert col in rules.columns
     assert len(rules) == len(clf.core_.bases_)
     assert rules["weight"].notna().all()
@@ -46,10 +56,12 @@ def test_explain_reason_codes(fitted) -> None:
 def test_explain_rejects_flexible_head(fitted) -> None:
     _, X = fitted
     from sklearn.ensemble import RandomForestClassifier
+
     rng = np.random.default_rng(0)
     y = (rng.uniform(size=len(X)) < 0.3).astype(int)
     clf = FlagGAMClassifier(
-        head="flexible", flexible_estimator=RandomForestClassifier(n_estimators=10),
+        head="flexible",
+        flexible_estimator=RandomForestClassifier(n_estimators=10),
         random_state=0,
     ).fit(X, y)
     with pytest.raises(ValueError):

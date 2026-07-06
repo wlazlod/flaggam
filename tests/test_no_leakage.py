@@ -22,7 +22,7 @@ def test_test_rows_never_influence_discovery() -> None:
 
     clf_a = FlagGAMClassifier(random_state=0).fit(X_train, y_train)
     rules_a = clf_a.export_rules()
-    _ = clf_a.predict_proba(X_test)          # touching test data after fit ...
+    _ = clf_a.predict_proba(X_test)  # touching test data after fit ...
     _ = clf_a.transform(X_test)
 
     clf_b = FlagGAMClassifier(random_state=0).fit(X_train, y_train)

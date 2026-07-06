@@ -26,9 +26,7 @@ def correlation_ratio(x: np.ndarray, y: np.ndarray) -> float:
     ss_total = float(((x - grand) ** 2).sum())
     if ss_total == 0.0:
         return 0.0
-    ss_between = sum(
-        len(x[y == c]) * (x[y == c].mean() - grand) ** 2 for c in np.unique(y)
-    )
+    ss_between = sum(len(x[y == c]) * (x[y == c].mean() - grand) ** 2 for c in np.unique(y))
     return float(np.sqrt(ss_between / ss_total))
 
 
@@ -58,9 +56,7 @@ def feature_weights(
         xv, yv = X[col].to_numpy()[obs], y[obs]
         if col in numerical:
             xv = xv.astype(float)
-            weights[col] = (
-                point_biserial(xv, yv) if task == "binary" else correlation_ratio(xv, yv)
-            )
+            weights[col] = point_biserial(xv, yv) if task == "binary" else correlation_ratio(xv, yv)
         else:
             weights[col] = cramers_v(xv, yv)
     return weights

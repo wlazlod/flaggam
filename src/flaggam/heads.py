@@ -28,7 +28,7 @@ class AdditiveHead:
             if self.task == "regression":
                 self.model_ = DummyRegressor(strategy="mean").fit(np.zeros((len(y), 1)), y)
                 self.coef_ = np.zeros(0)
-                self.intercept_ = float(np.mean(y))
+                self.intercept_ = np.array([float(np.mean(y))])
             else:
                 self.model_ = DummyClassifier(strategy="prior").fit(np.zeros((len(y), 1)), y)
                 self.coef_ = np.zeros((1, 0))
@@ -43,13 +43,21 @@ class AdditiveHead:
             binary = len(np.unique(y)) <= 2
             if isinstance(self.C, (list, tuple)):
                 self.model_ = LogisticRegressionCV(
-                    Cs=list(self.C), cv=5, l1_ratios=(0,), solver="lbfgs", max_iter=2000,
+                    Cs=list(self.C),
+                    cv=5,
+                    l1_ratios=(0,),
+                    solver="lbfgs",
+                    max_iter=2000,
                     scoring="roc_auc" if binary else "neg_log_loss",
-                    random_state=self.random_state, use_legacy_attributes=False,
+                    random_state=self.random_state,
+                    use_legacy_attributes=False,
                 ).fit(Z, y)
             else:
                 self.model_ = LogisticRegression(
-                    C=self.C, l1_ratio=0, solver="lbfgs", max_iter=2000,
+                    C=self.C,
+                    l1_ratio=0,
+                    solver="lbfgs",
+                    max_iter=2000,
                     random_state=self.random_state,
                 ).fit(Z, y)
         self.coef_ = self.model_.coef_

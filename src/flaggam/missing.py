@@ -1,10 +1,14 @@
 """Missing-indicator discovery. 'no_evidence' semantics live in bases.transform."""
 
+import logging
+
 import numpy as np
 import pandas as pd
 
 from .bases import MissingIndicatorBasis
 from .screening import bh_adjust, chi_square_test, two_proportion_test
+
+logger = logging.getLogger(__name__)
 
 
 def discover_missing_indicators(
@@ -27,7 +31,7 @@ def discover_missing_indicators(
         return []
     p_adj = bh_adjust(np.array([c[2] for c in candidates]))
     out = []
-    for (col, n_miss, p), pa in zip(candidates, p_adj):
+    for (col, n_miss, p), pa in zip(candidates, p_adj, strict=False):
         if pa <= fdr_alpha:
             out.append(
                 MissingIndicatorBasis(

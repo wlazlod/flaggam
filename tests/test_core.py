@@ -25,8 +25,8 @@ def test_discovers_expected_rules(clf_data) -> None:
     core = FlagCoreModule(task="binary").fit(X, y)
     meta = core.metadata()
     kinds_age = set(meta.loc[meta.feature == "age", "kind"])
-    assert "threshold_low" in kinds_age                       # low-age tail found
-    assert (meta.feature == "purpose").sum() >= 1             # edu level found
+    assert "threshold_low" in kinds_age  # low-age tail found
+    assert (meta.feature == "purpose").sum() >= 1  # edu level found
     levels = set(meta.loc[meta.feature == "purpose", "level"])
     assert "edu" in levels
     # At most one cutoff per side per numerical feature.

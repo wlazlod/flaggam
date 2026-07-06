@@ -8,10 +8,6 @@ from flaggam import FlagGAMClassifier, FlagGAMRegressor
 # Suppress warnings from sklearn/scipy internals that appear during
 # check_estimator runs but are unrelated to flaggam's own code.
 #
-# "invalid value encountered in cast" — emitted by
-#   sklearn.externals.array_api_compat.numpy._aliases during
-#   check_supervised_y_no_nan when sklearn casts NaN-containing arrays.
-#
 # "Precision loss occurred in moment calculation" — emitted by
 #   scipy.stats._axis_nan_policy during check_positive_only_tag_during_fit
 #   when scipy processes near-constant synthetic data.

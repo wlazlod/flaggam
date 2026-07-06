@@ -1,4 +1,4 @@
-"""FlagGAMClassifier: sklearn-compatible estimator for rule-basis GAMs."""
+"""FlagGAMClassifier and FlagGAMRegressor: sklearn-compatible estimators for rule-basis GAMs."""
 
 import warnings
 
@@ -18,6 +18,8 @@ from .weighting import compact_scores, feature_weights
 
 class _BaseFlagGAM(TransformerMixin, BaseEstimator):
     """Shared X conversion, core/head assembly, transform."""
+
+    n_features_in_: int  # set by _to_frame(reset=True); annotated for mypy
 
     def _to_frame(self, X, reset: bool) -> pd.DataFrame:
         if isinstance(X, pd.DataFrame):
@@ -42,13 +44,12 @@ class _BaseFlagGAM(TransformerMixin, BaseEstimator):
                 raise ValueError(f"Complex data not supported\n{arr}\n")
             if reset and arr.shape[0] == 0:
                 raise ValueError(
-                    "0 sample(s) (shape=(0, {})) were passed while a minimum of 1 is "
-                    "required.".format(arr.shape[1])
+                    f"0 sample(s) (shape=(0, {arr.shape[1]})) were passed while a minimum of 1 is "
+                    "required."
                 )
             if reset and arr.shape[1] == 0:
                 raise ValueError(
-                    "0 feature(s) (shape=({}, 0)) while a minimum of 1 is "
-                    "required.".format(arr.shape[0])
+                    f"0 feature(s) (shape=({arr.shape[0]}, 0)) while a minimum of 1 is " "required."
                 )
             if not reset and arr.shape[1] != self.n_features_in_:
                 raise ValueError(
@@ -57,9 +58,7 @@ class _BaseFlagGAM(TransformerMixin, BaseEstimator):
                 )
             df = pd.DataFrame(arr, columns=[f"x{i}" for i in range(arr.shape[1])])
             cat = self.categorical_features or []
-            cat_col_names = [
-                df.columns[i] if isinstance(i, (int, np.integer)) else i for i in cat
-            ]
+            cat_col_names = [df.columns[i] if isinstance(i, (int, np.integer)) else i for i in cat]
             for col in cat_col_names:
                 df[col] = pd.Categorical(df[col])
             for col in df.columns:
@@ -110,11 +109,13 @@ class _BaseFlagGAM(TransformerMixin, BaseEstimator):
     def export_rules(self) -> pd.DataFrame:
         check_is_fitted(self, "head_")
         from .inspection import export_rules as _export
+
         return _export(self)
 
     def explain(self, X) -> pd.DataFrame:
         check_is_fitted(self, "head_")
         from .inspection import explain as _explain
+
         return _explain(self, X)
 
 
@@ -202,9 +203,7 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
         if self.head == "additive":
             self.head_ = AdditiveHead(task, C=self.C, random_state=self.random_state)
         else:
-            self.head_ = FlexibleHead(
-                self.flexible_estimator, task, random_state=self.random_state
-            )
+            self.head_ = FlexibleHead(self.flexible_estimator, task, random_state=self.random_state)
         self.head_.fit(H, y_enc)
         return self
 
