@@ -36,21 +36,23 @@ def explain(estimator, X) -> pd.DataFrame:
     head = estimator.head_
     if not isinstance(head, AdditiveHead):
         raise ValueError("reason codes require the additive head")
-    Z = estimator.transform(X).toarray()
+    Z_sparse = estimator.transform(X)
+    Z = Z_sparse.toarray()
     coef = np.atleast_2d(head.coef_)
     intercept = np.atleast_1d(head.intercept_)
     is_clf = hasattr(estimator, "classes_")
     if is_clf and coef.shape[0] > 1:
-        target_row = np.argmax(estimator.head_.predict_proba(estimator.transform(X)), axis=1)
+        target_row = np.argmax(estimator.head_.predict_proba(Z_sparse), axis=1)
     else:
         target_row = np.zeros(len(Z), dtype=int)
     records = []
     bases = estimator.core_.bases_
+    # TODO: vectorize if explain() becomes hot on large n
     for i in range(Z.shape[0]):
         k = target_row[i]
         records.append(
             dict(row=i, feature="<intercept>", rule="<intercept>", value=1.0,
-                 contribution=float(intercept[min(k, len(intercept) - 1)]))
+                 contribution=float(intercept[min(k, len(intercept) - 1)]))  # k is always in bounds; min() kept as a cheap invariant guard
         )
         for j, b in enumerate(bases):
             if Z[i, j] != 0.0:
