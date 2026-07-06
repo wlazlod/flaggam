@@ -1,0 +1,6 @@
+flaggam
+Copyright 2026 flaggam contributors
+
+Independent from-scratch implementation of the FlagGAM method
+(Zhao & Welsch, arXiv:2605.31189) and the Univariate Flagging
+Algorithm (Sheth et al., PLOS ONE 2019, CC BY).
