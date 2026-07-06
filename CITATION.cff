@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below and the papers it implements."
+title: "FlagGAM: rule-basis generalized additive models (from-scratch implementation)"
+version: "0.1.0"
+license: Apache-2.0
+repository-code: "https://github.com/danielwlazlo/flag-gam"
+abstract: >
+  A from-scratch Python implementation of FlagGAM (Zhao & Welsch, 2026) and the
+  Univariate Flagging Algorithm (Sheth et al., 2019).  The package provides
+  sklearn-compatible classifiers and regressors that build interpretable rule-basis
+  generalized additive models from tabular data.
+
+references:
+  - type: article
+    title: "FlagGAM: Rule-Basis Generalized Additive Models"
+    authors:
+      - family-names: Zhao
+        given-names: Xiaoxiao
+      - family-names: Welsch
+        given-names: Roy E.
+    year: 2026
+    url: "https://arxiv.org/abs/2605.31189"
+    identifiers:
+      - type: other
+        value: "arXiv:2605.31189"
+        description: "arXiv preprint"
+
+  - type: article
+    title: >
+      A univariate flagging algorithm for identifying patterns in clinical data
+    authors:
+      - family-names: Sheth
+        given-names: Harsh
+      - name: "et al."
+    journal: "PLOS ONE"
+    volume: 14
+    issue: 10
+    year: 2019
+    doi: "10.1371/journal.pone.0223161"
+    url: "https://doi.org/10.1371/journal.pone.0223161"
+    identifiers:
+      - type: doi
+        value: "10.1371/journal.pone.0223161"
