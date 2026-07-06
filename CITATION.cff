@@ -21,17 +21,21 @@ references:
     year: 2026
     url: "https://arxiv.org/abs/2605.31189"
     identifiers:
-      - type: other
-        value: "arXiv:2605.31189"
-        description: "arXiv preprint"
+      - type: arxiv
+        value: "2605.31189"
 
   - type: article
     title: >
       A univariate flagging algorithm for identifying patterns in clinical data
     authors:
       - family-names: Sheth
-        given-names: Harsh
-      - name: "et al."
+        given-names: Maulik
+      - family-names: Gerovitch
+        given-names: Andrew
+      - family-names: Welsch
+        given-names: Roy E.
+      - family-names: Markuzon
+        given-names: Natasha
     journal: "PLOS ONE"
     volume: 14
     issue: 10

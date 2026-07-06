@@ -36,7 +36,7 @@ Each entry references the source that drove the decision.
    term is added unconditionally and is not subject to screening.
    *(spec §6.5; paper Fig. 1)*
 
-6. **Feature weights: point-biserial for binary, correlation ratio (η²) for regression, Cramér's V for multiclass.**
+6. **Feature weights: point-biserial for binary, correlation ratio (η) for regression, Cramér's V for multiclass.**
    Each weight measures the association strength between the flag indicator and the outcome.
    Point-biserial correlation is equivalent to Pearson correlation when one variable is binary.
    *(spec §6.6)*
