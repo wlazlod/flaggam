@@ -5,7 +5,7 @@ from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 
-from flaggam import FlagGAMClassifier
+from flaggam import FlagGAMClassifier, FlagGAMRegressor
 
 
 @pytest.fixture()
@@ -93,3 +93,39 @@ def test_string_labels(data) -> None:
     clf = FlagGAMClassifier(random_state=0).fit(X, ys)
     assert set(clf.predict(X)) <= {"bad", "good"}
     assert list(clf.classes_) == ["bad", "good"]
+
+
+@pytest.fixture()
+def reg_data() -> tuple[pd.DataFrame, np.ndarray]:
+    rng = np.random.default_rng(0)
+    n = 2000
+    sqft = rng.normal(100, 20, n)
+    zone = rng.choice(["a", "b", "c"], n)
+    y = 0.05 * sqft + 2.0 * np.maximum(sqft - np.quantile(sqft, 0.8), 0) \
+        + 1.5 * (zone == "a") + rng.normal(0, 1, n)
+    return pd.DataFrame({"sqft": sqft, "zone": pd.Categorical(zone)}), y
+
+
+def test_regressor_fit_predict(reg_data) -> None:
+    X, y = reg_data
+    reg = FlagGAMRegressor(random_state=0).fit(X, y)
+    pred = reg.predict(X)
+    assert pred.shape == y.shape
+    ss_res = ((y - pred) ** 2).sum()
+    ss_tot = ((y - y.mean()) ** 2).sum()
+    assert 1 - ss_res / ss_tot > 0.5           # r2 well above baseline
+    assert not hasattr(reg, "predict_proba")
+
+
+def test_regressor_alpha_list(reg_data) -> None:
+    X, y = reg_data
+    reg = FlagGAMRegressor(alpha=[1e-3, 1e-2, 1e-1, 1.0, 10.0], random_state=0).fit(X, y)
+    assert reg.predict(X).shape == y.shape
+
+
+def test_regressor_clone(reg_data) -> None:
+    X, y = reg_data
+    reg = FlagGAMRegressor(random_state=0)
+    p1 = reg.fit(X, y).predict(X)
+    p2 = clone(reg).fit(X, y).predict(X)
+    np.testing.assert_array_equal(p1, p2)

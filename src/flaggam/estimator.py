@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
@@ -53,7 +53,7 @@ class _BaseFlagGAM(BaseEstimator):
             quantile_step=self.quantile_step,
             min_support=self.min_support,
             fdr_alpha=self.fdr_alpha,
-            effect_size=self.effect_size,
+            effect_size=getattr(self, "effect_size", "risk_difference"),
             missing=self.missing,
         )
 
@@ -170,6 +170,69 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
     def predict(self, X) -> np.ndarray:
         proba = self.predict_proba(X)
         return self.label_encoder_.inverse_transform(np.argmax(proba, axis=1))
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        tags.input_tags.sparse = False
+        return tags
+
+
+class FlagGAMRegressor(RegressorMixin, _BaseFlagGAM):
+    """Rule-basis generalized additive model regressor (sklearn contract)."""
+
+    def __init__(
+        self,
+        quantile_low=(0.05, 0.45),
+        quantile_high=(0.55, 0.95),
+        quantile_step=0.05,
+        min_support="auto",
+        fdr_alpha=0.05,
+        head="additive",
+        flexible_estimator=None,
+        alpha=1.0,
+        missing="no_evidence",
+        monotonic_constraints=None,
+        categorical_features=None,
+        random_state=None,
+    ) -> None:
+        self.quantile_low = quantile_low
+        self.quantile_high = quantile_high
+        self.quantile_step = quantile_step
+        self.min_support = min_support
+        self.fdr_alpha = fdr_alpha
+        self.head = head
+        self.flexible_estimator = flexible_estimator
+        self.alpha = alpha
+        self.missing = missing
+        self.monotonic_constraints = monotonic_constraints
+        self.categorical_features = categorical_features
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        """Discover flag bases, fit regression head on Z(X)."""
+        df = self._to_frame(X, reset=True)
+        y = np.asarray(y, dtype=float).ravel()
+        if self.monotonic_constraints is not None:
+            raise NotImplementedError("monotonic constraints ship in the extensions plan")
+        if self.head == "flexible" and self.flexible_estimator is None:
+            raise ValueError("head='flexible' requires flexible_estimator")
+        self.core_ = self._build_core("regression").fit(df, y)
+        Z = self.core_.transform(df)
+        if self.head == "additive":
+            self.head_ = AdditiveHead(
+                "regression", alpha=self.alpha, random_state=self.random_state
+            )
+        else:
+            self.head_ = FlexibleHead(
+                self.flexible_estimator, "regression", random_state=self.random_state
+            )
+        self.head_.fit(Z, y)
+        return self
+
+    def predict(self, X) -> np.ndarray:
+        check_is_fitted(self, "head_")
+        return np.asarray(self.head_.predict(self.transform(X)), dtype=float)
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()

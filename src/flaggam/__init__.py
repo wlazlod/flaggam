@@ -1,7 +1,7 @@
 """FlagGAM: rule-basis generalized additive models (from-scratch implementation)."""
 
-from .estimator import FlagGAMClassifier
+from .estimator import FlagGAMClassifier, FlagGAMRegressor
 
 __version__ = "0.1.0"
 
-__all__ = ["FlagGAMClassifier", "__version__"]
+__all__ = ["FlagGAMClassifier", "FlagGAMRegressor", "__version__"]
