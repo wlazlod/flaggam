@@ -159,9 +159,9 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
 
     def fit(self, X, y):
         """Discover flag bases, fit head on Z(X)."""
-        df = self._to_frame(X, reset=True)
         if y is None:
             raise ValueError("requires y to be passed, but the target y is None")
+        df = self._to_frame(X, reset=True)
         y = np.asarray(y)
         if len(df) != len(y):
             raise ValueError(
@@ -268,9 +268,9 @@ class FlagGAMRegressor(RegressorMixin, _BaseFlagGAM):
 
     def fit(self, X, y):
         """Discover flag bases, fit regression head on Z(X)."""
-        df = self._to_frame(X, reset=True)
         if y is None:
             raise ValueError("requires y to be passed, but the target y is None")
+        df = self._to_frame(X, reset=True)
         y = np.asarray(y)
         if y.dtype.kind == "c":
             raise ValueError(f"Complex data not supported\n{y}\n")

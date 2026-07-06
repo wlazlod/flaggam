@@ -20,12 +20,7 @@ from flaggam import FlagGAMClassifier, FlagGAMRegressor
 # is also filtered globally in pyproject.toml for the collection phase.
 pytestmark = [
     pytest.mark.filterwarnings("ignore::pytest.PytestRemovedIn10Warning"),
-    pytest.mark.filterwarnings(
-        "ignore:invalid value encountered in cast:RuntimeWarning"
-    ),
-    pytest.mark.filterwarnings(
-        "ignore:Precision loss occurred in moment calculation:RuntimeWarning"
-    ),
+    pytest.mark.filterwarnings("ignore:Precision loss occurred:RuntimeWarning"),
 ]
 
 # Checks that cannot apply to a screening-based rule model. Each entry MUST
