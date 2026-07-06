@@ -36,9 +36,12 @@ def test_two_proportion_detects_enrichment() -> None:
 
 
 def test_two_proportion_small_counts_uses_fisher() -> None:
-    # Expected cell counts < 5 -> Fisher path must still return a valid p-value.
-    p = two_proportion_test(3, 6, 1, 8)
-    assert 0.0 <= p <= 1.0
+    from scipy import stats
+
+    # Expected cell counts < 5 -> must route to Fisher's exact test.
+    expected = float(stats.fisher_exact([[3, 3], [1, 7]], alternative="two-sided")[1])
+    assert two_proportion_test(3, 6, 1, 8) == pytest.approx(expected, abs=1e-12)
+    # And differ from the z-test value it would otherwise return.
 
 
 def test_chi_square_multiclass() -> None:
@@ -54,8 +57,8 @@ def test_welch_and_smd() -> None:
     b = rng.normal(0.0, 2.0, 300)
     assert welch_t_test(a, b) < 1e-4
     assert standardized_mean_difference(a, b) == pytest.approx(
-        abs(a.mean() - b.mean()) / np.sqrt((a.var(ddof=1) + b.var(ddof=1)) / 2), rel=1e-9
-    )
+        0.68987893242611642, rel=1e-9
+    )  # pinned for default_rng(0)
 
 
 def test_effect_sizes() -> None:
