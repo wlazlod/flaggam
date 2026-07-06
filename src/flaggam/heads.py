@@ -38,18 +38,18 @@ class AdditiveHead:
             if isinstance(self.alpha, (list, tuple)):
                 self.model_ = RidgeCV(alphas=list(self.alpha)).fit(Z, y)
             else:
-                self.model_ = Ridge(alpha=self.alpha, random_state=self.random_state).fit(Z, y)
+                self.model_ = Ridge(alpha=self.alpha).fit(Z, y)
         else:
             binary = len(np.unique(y)) <= 2
             if isinstance(self.C, (list, tuple)):
                 self.model_ = LogisticRegressionCV(
-                    Cs=list(self.C), cv=5, penalty="l2", solver="lbfgs", max_iter=2000,
+                    Cs=list(self.C), cv=5, l1_ratios=(0,), solver="lbfgs", max_iter=2000,
                     scoring="roc_auc" if binary else "neg_log_loss",
-                    random_state=self.random_state,
+                    random_state=self.random_state, use_legacy_attributes=False,
                 ).fit(Z, y)
             else:
                 self.model_ = LogisticRegression(
-                    C=self.C, penalty="l2", solver="lbfgs", max_iter=2000,
+                    C=self.C, l1_ratio=0, solver="lbfgs", max_iter=2000,
                     random_state=self.random_state,
                 ).fit(Z, y)
         self.coef_ = self.model_.coef_
