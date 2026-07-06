@@ -62,11 +62,15 @@ class _BaseFlagGAM(BaseEstimator):
         check_is_fitted(self, "core_")
         return self.core_.transform(self._to_frame(X, reset=False))
 
-    def export_rules(self) -> pd.DataFrame:        # implemented in Task 10
-        raise NotImplementedError("implemented in inspection task")
+    def export_rules(self) -> pd.DataFrame:
+        check_is_fitted(self, "head_")
+        from .inspection import export_rules as _export
+        return _export(self)
 
-    def explain(self, X) -> pd.DataFrame:          # implemented in Task 10
-        raise NotImplementedError("implemented in inspection task")
+    def explain(self, X) -> pd.DataFrame:
+        check_is_fitted(self, "head_")
+        from .inspection import explain as _explain
+        return _explain(self, X)
 
 
 class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
