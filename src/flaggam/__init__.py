@@ -9,6 +9,7 @@ from .calibration import (
 )
 from .datasets import CLASSIFICATION, REGRESSION, DatasetSpec
 from .estimator import FlagGAMClassifier, FlagGAMRegressor
+from .explorer import export_rules_html
 from .fairness import ProxyAudit, group_metrics
 from .monotonic import MonotonicAdditiveHead, bounds_for_bases
 from .plots import (
@@ -38,6 +39,7 @@ __all__ = [
     "bounds_for_bases",
     "ProxyAudit",
     "group_metrics",
+    "export_rules_html",
     "plot_shape",
     "plot_rule_importance",
     "plot_waterfall",
