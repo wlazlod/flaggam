@@ -28,7 +28,7 @@ def test_breast_cancer_offline() -> None:
 
 
 @pytest.mark.network
-def test_california_offline() -> None:
+def test_california_loader() -> None:
     X, y = REGRESSION["california"].loader()
     assert X.shape == (20640, 8) and pd.api.types.is_float_dtype(y)
 
@@ -48,7 +48,7 @@ NETWORK_CASES = [
     ("heart", (303, 13), "binary"),
     ("german_credit", (1000, 20), "binary"),
     ("adult", None, "binary"),           # ~48842 rows; assert 45000 < n < 50000, 14 cols
-    ("bank_marketing", None, "binary"),  # duration must be absent
+    ("bank_marketing", (41188, 19), "binary"),
     ("ames", None, "regression"),        # log target: 10 < y.mean() < 13
     ("wine_white", (4898, 11), "regression"),
 ]
@@ -68,6 +68,7 @@ def test_network_loader(name, shape, task) -> None:
         assert 45000 < len(X) < 50000 and X.shape[1] == 14
     if name == "bank_marketing":
         assert "duration" not in X.columns
+        assert "euribor3m" in X.columns
     if name == "ames":
         assert 10 < float(y.mean()) < 13  # log-scale sanity
     if name == "pima":

@@ -210,7 +210,7 @@ def load_adult() -> tuple[pd.DataFrame, pd.Series]:
 
     df = _cached("adult", _fetch)
     df = df.dropna(subset=["_target"])
-    y_raw = df["_target"].str.strip()
+    y_raw = df["_target"]  # already stripped pre-cache
     X = df.drop("_target", axis=1).copy()
 
     for col in X.select_dtypes(include=["object", "string"]).columns:
@@ -224,25 +224,53 @@ def load_adult() -> tuple[pd.DataFrame, pd.Series]:
 
 
 def load_bank_marketing() -> tuple[pd.DataFrame, pd.Series]:
-    """Bank Marketing (45211 rows, binary; positive=subscribed term deposit).
+    """Bank Marketing — bank-additional-full variant (41188 rows, binary; positive=subscribed).
 
-    Source: https://archive.ics.uci.edu/dataset/222 (Bank Marketing).
+    Source: https://www.openml.org/d/42813 (OpenML id=42813, bank-additional-full variant).
     License: CC BY 4.0 — verify before redistribution.
-    Observed variant: UCI id=222, 45211 rows, 16 original features.
+    Observed variant: bank-additional-full (spec §9), 41188 rows, 21 original features
+    including socioeconomic columns emp.var.rate, cons.price.idx, cons.conf.idx,
+    euribor3m, nr.employed. After dropping 'duration' → 19 feature columns + y.
     The post-call 'duration' column is always dropped (UCI recommendation, spec §9).
     'unknown' is kept as a regular category level (FlagGAM/UFA design: treat
     as explicit category, not NaN, to preserve structure of missingness).
     """
 
-    def _fetch() -> pd.DataFrame:
-        from ucimlrepo import fetch_ucirepo
+    # invalidate stale bank-full cache (UCI id=222, 45211 rows)
+    _stale_path = data_dir() / "bank_marketing.parquet"
+    if _stale_path.exists():
+        try:
+            _stale_df = pd.read_parquet(_stale_path)
+            if len(_stale_df) != 41188:
+                _stale_path.unlink()
+                logger.info(
+                    "deleted stale bank_marketing.parquet (%d rows, expected 41188)",
+                    len(_stale_df),
+                )
+        except Exception:
+            _stale_path.unlink()
+            logger.info("deleted unreadable bank_marketing.parquet")
 
-        dataset = fetch_ucirepo(id=222)
-        X = dataset.data.features.copy()
-        y = dataset.data.targets.copy()
-        X.drop(columns=["duration"], errors="ignore", inplace=True)
-        X["_target"] = y.iloc[:, 0]
-        return X
+    def _fetch() -> pd.DataFrame:
+        import openml
+
+        # OpenML id=42813 is 'bankmarketing' — bank-additional-full (41188×20+target).
+        # id=44234 is bank-full (45211 rows); id=1461 is also bank-full.
+        dataset = openml.datasets.get_dataset(42813)
+        X_raw, y_raw, _, _ = dataset.get_data(target=dataset.default_target_attribute or "y")
+        assert isinstance(X_raw, pd.DataFrame)
+        if X_raw.shape[0] != 41188 or "euribor3m" not in X_raw.columns:
+            dl = openml.datasets.list_datasets(
+                data_name="bankmarketing", output_format="dataframe"
+            )
+            did = int(dl[dl["NumberOfInstances"] == 41188].index[0])
+            dataset = openml.datasets.get_dataset(did)
+            X_raw, y_raw, _, _ = dataset.get_data(target=dataset.default_target_attribute or "y")
+            assert isinstance(X_raw, pd.DataFrame)
+        assert "euribor3m" in X_raw.columns, "bank-additional-full variant not found"
+        X_raw.drop(columns=["duration"], errors="ignore", inplace=True)
+        X_raw["_target"] = y_raw
+        return X_raw
 
     df = _cached("bank_marketing", _fetch)
     y = (df["_target"] == "yes").astype(int)
@@ -270,7 +298,7 @@ def load_ames() -> tuple[pd.DataFrame, pd.Series]:
 
         try:
             dataset = openml.datasets.get_dataset("ames_housing", version=1)
-        except Exception:
+        except (openml.exceptions.OpenMLServerException, ValueError, KeyError):
             dl = openml.datasets.list_datasets(data_name="ames_housing", output_format="dataframe")
             did = int(dl.index[0]) if hasattr(dl, "index") else next(iter(dl))
             dataset = openml.datasets.get_dataset(did)
