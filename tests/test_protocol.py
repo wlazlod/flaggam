@@ -41,6 +41,13 @@ def test_make_split_stratified(xy: tuple[pd.DataFrame, pd.Series]) -> None:
     assert not np.array_equal(tr, tr3)
 
 
+def test_make_split_regression(xy: tuple[pd.DataFrame, pd.Series]) -> None:
+    _, y = xy
+    y_float = y.astype(float)
+    tr, te = make_split(y_float, seed=0, task="regression")
+    assert set(tr) & set(te) == set()  # disjoint indices
+
+
 def test_train_val_split_shapes(xy: tuple[pd.DataFrame, pd.Series]) -> None:
     X, y = xy
     X_tr, X_val, y_tr, y_val = train_val_split(X, y, seed=0, task="binary")
@@ -72,6 +79,7 @@ def test_corrupt_missing_fraction(xy: tuple[pd.DataFrame, pd.Series]) -> None:
 
 def test_corrupt_noise_numeric_only(xy: tuple[pd.DataFrame, pd.Series]) -> None:
     X, _ = xy
+    X_orig = X.copy()
     rng = np.random.default_rng(0)
     sd = {"a": float(X["a"].std()), "b": float(X["b"].std())}
     Xc = corrupt_noise(X, rho=0.5, train_sd=sd, rng=rng)
@@ -80,6 +88,8 @@ def test_corrupt_noise_numeric_only(xy: tuple[pd.DataFrame, pd.Series]) -> None:
     assert changed == pytest.approx(0.5, abs=0.08)
     resid = (Xc["a"] - X["a"])[Xc["a"] != X["a"]]
     assert resid.std() == pytest.approx(0.5 * sd["a"], rel=0.25)
+    # original frame untouched (corrupt_noise must copy)
+    pd.testing.assert_frame_equal(X, X_orig)
 
 
 def test_scores_and_rows(tmp_path: Path, xy: tuple[pd.DataFrame, pd.Series]) -> None:
