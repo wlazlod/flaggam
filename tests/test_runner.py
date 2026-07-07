@@ -1,0 +1,58 @@
+import numpy as np
+import pandas as pd
+from benchmarks.runner import RunConfig, run_benchmark
+
+from flaggam.datasets import DatasetSpec
+
+
+def _toy_binary() -> tuple[pd.DataFrame, pd.Series]:
+    rng = np.random.default_rng(7)
+    n = 400
+    x = rng.normal(size=n)
+    y = pd.Series((rng.uniform(size=n) < 1 / (1 + np.exp(-(2 * (x <= -0.5) - 0.5)))).astype(int))
+    return pd.DataFrame({"x": x, "c": pd.Categorical(rng.choice(["a", "b"], n))}), y
+
+
+TOY = {"toy": DatasetSpec("toy", "binary", _toy_binary)}
+
+
+def test_run_benchmark_writes_tidy_rows(tmp_path) -> None:
+    out = tmp_path / "res.csv"
+    cfg = RunConfig(datasets=["toy"], methods=["logistic", "flaggam"],
+                    seeds=range(2), conditions=["clean", "miss50"], out=out)
+    run_benchmark(cfg, task="binary", registry=TOY)
+    df = pd.read_csv(out)
+    # 2 methods x 2 seeds x 2 conditions x 1 metric
+    assert len(df) == 8
+    assert set(df.method) == {"logistic", "flaggam"}
+    assert set(df.condition) == {"clean", "miss50"}
+    assert df.value.between(0.3, 1.0).all()
+    # paired: same (method, seed) has clean >= miss50 on average across the frame
+    piv = df.pivot_table(index=["method", "seed"], columns="condition", values="value")
+    assert (piv["clean"] - piv["miss50"]).mean() > -0.05
+
+
+def test_run_benchmark_deterministic(tmp_path) -> None:
+    a, b = tmp_path / "a.csv", tmp_path / "b.csv"
+    for out in (a, b):
+        run_benchmark(RunConfig(["toy"], ["flaggam"], range(2), ["clean"], out),
+                      task="binary", registry=TOY)
+    pd.testing.assert_frame_equal(pd.read_csv(a), pd.read_csv(b))
+
+
+def test_render_tables_smoke(tmp_path, capsys) -> None:
+    from benchmarks.render_tables import render
+    out = tmp_path / "res.csv"
+    run_benchmark(RunConfig(["toy"], ["flaggam"], range(2), ["clean"], out),
+                  task="binary", registry=TOY)
+    render(out, table=None)
+    text = capsys.readouterr().out
+    assert "flaggam" in text and "toy" in text
+
+
+def test_cli_parses() -> None:
+    from benchmarks.run_classification import build_parser
+    args = build_parser().parse_args(
+        ["--datasets", "german_credit", "--n-splits", "3", "--out", "/tmp/x.csv"]
+    )
+    assert args.datasets == ["german_credit"] and args.n_splits == 3
