@@ -108,3 +108,36 @@ def test_robustness_runner_and_drop_table(tmp_path, capsys) -> None:
     render(out, table=5)
     text = capsys.readouterr().out
     assert "miss50" in text and "drop" in text.lower()
+
+
+def test_ablation_variants_registered() -> None:
+    from benchmarks.methods import get_methods
+    factories, skipped = get_methods("binary", include_ablation=True)
+    names = set(factories) | set(skipped)
+    assert {"flaggam_compact_equal", "flaggam_compact_weighted",
+            "flaggam_full_additive", "flaggam_full_rf"} <= names
+    # default registry does NOT carry ablation variants
+    default_names = set(get_methods("binary")[0])
+    assert "flaggam_compact_equal" not in default_names
+
+
+def test_sensitivity_runner_labels(tmp_path) -> None:
+    import benchmarks.run_sensitivity as rs
+    out = tmp_path / "sens.csv"
+    rs.main(["--n-splits", "1", "--out", str(out), "--datasets", "toy"], registry=TOY)
+    df = pd.read_csv(out)
+    labels = set(df.method)
+    assert "default" in labels
+    assert any(label.startswith("fdr=") for label in labels)
+    assert any(label.startswith("step=") for label in labels)
+    assert any(label.startswith("minsup=") for label in labels)
+
+
+def test_ablation_runner_smoke(tmp_path) -> None:
+    import benchmarks.run_ablation as ra
+    out = tmp_path / "abl.csv"
+    ra.main(["--n-splits", "1", "--out", str(out), "--datasets", "toy",
+             "--methods", "flaggam_compact_equal", "flaggam_full_additive"], registry=TOY)
+    df = pd.read_csv(out)
+    assert set(df.method) == {"flaggam_compact_equal", "flaggam_full_additive"}
+    assert set(df.condition) == {"clean", "miss50", "noise50"}

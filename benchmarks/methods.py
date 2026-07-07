@@ -194,13 +194,21 @@ class FlagGAMMethod(Method):
     use that path here — the benchmark protocol's own val carve is the tuner. Passing
     a single float C avoids double-tuning (internal CV would tune again on the same
     training fold, biasing hyperparameter selection).
+
+    `overrides`: extra constructor kwargs merged into every FlagGAMClassifier/
+    FlagGAMRegressor build (tuning candidates and the final refit) — used by
+    run_sensitivity.py (fdr_alpha/quantile_step/min_support) and the ablation
+    representation/feature_weighting variants (run_ablation.py). FlagGAM's own
+    class defaults (fdr_alpha=0.05, quantile_step=0.05, min_support="auto") are
+    untouched; overrides only take effect when explicitly passed here.
     """
 
     name = "flaggam"
     needs_imputation = False
 
-    def __init__(self, task: str) -> None:
+    def __init__(self, task: str, overrides: dict[str, Any] | None = None) -> None:
         self._task = task
+        self._overrides = overrides or {}
 
     def fit(self, X_train: pd.DataFrame, y_train: pd.Series, seed: int) -> "Method":
         X_tr, X_val, y_tr, y_val = train_val_split(X_train, y_train, seed, self._task)
@@ -209,19 +217,23 @@ class FlagGAMMethod(Method):
             grid = [{"C": c} for c in [0.01, 0.1, 1, 10]]
 
             def build(params: dict) -> Any:
-                return FlagGAMClassifier(C=params["C"], random_state=seed)
+                return FlagGAMClassifier(C=params["C"], random_state=seed, **self._overrides)
 
             best = _select(grid, build, X_tr, y_tr, X_val, y_val, self._task)
-            self._model = FlagGAMClassifier(C=best["C"], random_state=seed).fit(X_train, y_train)
+            self._model = FlagGAMClassifier(
+                C=best["C"], random_state=seed, **self._overrides
+            ).fit(X_train, y_train)
         else:
             grid = [{"alpha": a} for a in [1e-3, 1e-2, 0.1, 1.0, 10.0]]
 
             def build(params: dict) -> Any:  # type: ignore[misc]
-                return FlagGAMRegressor(alpha=params["alpha"], random_state=seed)
+                return FlagGAMRegressor(
+                    alpha=params["alpha"], random_state=seed, **self._overrides
+                )
 
             best = _select(grid, build, X_tr, y_tr, X_val, y_val, self._task)
             self._model = FlagGAMRegressor(
-                alpha=best["alpha"], random_state=seed
+                alpha=best["alpha"], random_state=seed, **self._overrides
             ).fit(X_train, y_train)
 
         return self
@@ -230,6 +242,18 @@ class FlagGAMMethod(Method):
         if self._task == "binary":
             return self._model.predict_proba(X)[:, 1]
         return self._model.predict(X)
+
+
+def flaggam_factory(
+    task: str, overrides: dict[str, Any] | None = None
+) -> Callable[[], Method]:
+    """Build a `flaggam` Method factory with optional constructor-param overrides.
+
+    Reused by the standard `flaggam` registry entry (overrides=None) and by
+    run_sensitivity.py / run_ablation.py, which need FlagGAM refit under fixed
+    non-default constructor kwargs (Tables 7, 8).
+    """
+    return lambda: FlagGAMMethod(task, overrides)
 
 
 # ---------------------------------------------------------------------------
@@ -306,7 +330,7 @@ class RFMethod(Method):
 
 
 def get_methods(
-    task: str,
+    task: str, include_ablation: bool = False
 ) -> tuple[dict[str, Callable[[], Method]], dict[str, str]]:
     """Return (available factories, skipped {name: reason}).
 
@@ -314,6 +338,10 @@ def get_methods(
     ImportError message. Guarded imports for optional deps (imodels, aix360)
     occur at _method_impls load time; this function assembles the dicts based
     on which imports succeeded.
+
+    include_ablation: when True (binary task only), also register the four
+    Table-7 ablation variants (flaggam_compact_equal/_weighted, flaggam_full_additive,
+    flaggam_full_rf). Off by default so Table-3-style runs keep the paper's 8 methods.
     """
     # Deferred import: _method_impls is only loaded here, after methods.py is
     # fully initialised, so the back-reference from _method_impls to this module
@@ -339,11 +367,24 @@ def get_methods(
         factories["ridge"] = RidgeMethod
 
     # Shared methods (task-parametrised via lambda)
-    factories["flaggam"] = lambda: FlagGAMMethod(task)
+    factories["flaggam"] = flaggam_factory(task)
     factories["flaggam_rf"] = lambda: FlagGAMRFMethod(task)
     factories["rf"] = lambda: RFMethod(task)
     factories["xgboost"] = lambda: XGBoostMethod(task)
     factories["ebm"] = lambda: EBMMethod(task)
+
+    # Table-7 ablation variants (compact vs. full representation x additive vs. RF
+    # head) — only meaningful for classification; opt-in via include_ablation so
+    # default registry calls (Table 3 etc.) keep the paper's 8 methods.
+    if include_ablation and task == "binary":
+        factories["flaggam_compact_equal"] = flaggam_factory(
+            task, {"representation": "compact", "feature_weighting": None}
+        )
+        factories["flaggam_compact_weighted"] = flaggam_factory(
+            task, {"representation": "compact", "feature_weighting": "auto"}
+        )
+        factories["flaggam_full_additive"] = flaggam_factory(task)
+        factories["flaggam_full_rf"] = lambda: FlagGAMRFMethod(task)
 
     # RuleFit — optional (imodels)
     if _rulefit_available:

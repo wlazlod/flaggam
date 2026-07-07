@@ -10,6 +10,7 @@ and yields no rows for that split — never a silently zero-filled row.
 
 import argparse
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -17,7 +18,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from benchmarks.methods import get_methods
+from benchmarks.methods import Method, get_methods
 from benchmarks.protocol import (
     apply_impute,
     corrupt_missing,
@@ -85,13 +86,25 @@ def _corrupted_frame(
 
 
 def run_benchmark(
-    cfg: RunConfig, task: str, registry: dict[str, DatasetSpec] | None = None
+    cfg: RunConfig,
+    task: str,
+    registry: dict[str, DatasetSpec] | None = None,
+    factories: dict[str, Callable[[], Method]] | None = None,
 ) -> None:
-    """Run cfg over registry (or CLASSIFICATION/REGRESSION if None), appending rows to cfg.out."""
+    """Run cfg over registry (or CLASSIFICATION/REGRESSION if None), appending rows to cfg.out.
+
+    `factories`, when given, is used directly instead of calling get_methods(task) —
+    an orchestration hook for run_ablation.py/run_sensitivity.py, which need method
+    sets get_methods() cannot produce (ablation variants, labeled sensitivity
+    overrides). cfg.methods filtering still applies; nothing lands in `skipped`.
+    """
     reg = registry if registry is not None else (CLASSIFICATION if task == "binary" else REGRESSION)
-    factories, skipped = get_methods(task)
-    for name, reason in skipped.items():
-        logger.info("Skipping method %r: %s", name, reason)
+    if factories is None:
+        factories, skipped = get_methods(task)
+        for name, reason in skipped.items():
+            logger.info("Skipping method %r: %s", name, reason)
+    else:
+        skipped = {}
 
     requested = cfg.methods if cfg.methods is not None else list(factories)
     unavailable = [n for n in requested if n not in factories]
