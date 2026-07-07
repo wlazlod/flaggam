@@ -88,3 +88,47 @@ Each entry references the source that drove the decision.
     matches the per-feature-one-candidate structure in `missing.py`'s docstring.
     *(implementation decision; paper is silent on multiple-comparison correction for missing
     indicators)*
+
+14. **Tuning validation carve = 80/20 of the training split, stratified for classification.**
+    Methods that need internal hyperparameter tuning (e.g. `xgboost`) carve their validation
+    fold from the training split only, never from the held-out test split.  The carve is 80%
+    train / 20% validation, stratified on the label for classification tasks.  Spec §10 leaves
+    the exact fraction open; 80/20 is the conventional default.
+    *(spec §10)*
+
+15. **Smoke-benchmark tolerance ±0.02 at 25 splits; the spec's ±0.010 applies to full
+    1000-split reproductions.**
+    `tests/test_smoke_benchmark.py` runs 25 stratified splits on German Credit, not the
+    paper's 1000.  The sampling error of a 25-split mean AUROC exceeds 0.010 on this dataset,
+    so the smoke test uses a wider ±0.02 band around the paper's reported 0.775.  The tighter
+    ±0.010 spec tolerance is reserved for full 1000-split reproduction runs (see the follow-up
+    plan in the Task 8 brief).
+    *(spec §14; test tolerance discussion)*
+
+16. **GLRM/aix360 status: wrapped but unavailable in this environment; excluded from the
+    benchmarks extra.**
+    `GLRMMethod` in `benchmarks/_method_impls.py` is fully implemented behind a guarded
+    import of `aix360.algorithms.rbm`.  During Task 4, `aix360` was added to the `benchmarks`
+    optional dependency group and installed successfully, but importing it transitively
+    requires `cvxpy`, which `aix360` does not declare as a dependency and which is not
+    installed; the import therefore fails.  The `aix360` addition was reverted from
+    `pyproject.toml`/`uv.lock` rather than shipping a non-functional optional dependency, so
+    `aix360` is not installed at all in this environment.  `get_methods()` reports `"glrm"` in
+    its `skipped` dict with reason `"aix360 not installed: No module named 'aix360'"`, and
+    `glrm` is silently excluded from any run rather than raising.
+    *(Task 4 report; guarded-import design)*
+
+17. **Pima: physiologically impossible zeros treated as missing (NaN) for all methods.**
+    In the Pima Indians Diabetes dataset, zero values in `{glucose, blood_pressure,
+    skin_thickness, insulin, bmi}` are not valid measurements (they cannot be zero in a living
+    patient) and are recoded to `NaN` at load time.  This recoding is applied once in the
+    loader, so every method sees the same missingness pattern uniformly — no method benefits
+    from treating impossible zeros as real values.
+    *(dataset loader design)*
+
+18. **Table 7 ablation uses the ρ=0.50 corruption setting for its "missing"/"noisy" columns.**
+    `run_ablation.py` reports FlagGAM ablation variants (rule count, head type, etc.) across a
+    `clean` column and `missing`/`noisy` columns.  The `missing`/`noisy` columns use the
+    ρ=0.50 corruption conditions (`miss50`/`noise50`), matching the more stressful of the two
+    corruption levels used elsewhere (Table 5), rather than ρ=0.25.
+    *(spec Table 7; consistent with Table 5's stress-test intent)*

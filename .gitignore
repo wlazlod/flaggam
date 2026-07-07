@@ -10,3 +10,4 @@ dist/
 .claude/
 PLAN.md
 plan/
+benchmarks/results/

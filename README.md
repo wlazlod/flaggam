@@ -93,6 +93,36 @@ https://doi.org/10.1371/journal.pone.0223161
 
 A machine-readable citation file is available at [`CITATION.cff`](CITATION.cff).
 
+## Benchmarks
+
+Reproducing the paper's tables requires the `benchmarks` optional dependency group:
+
+```bash
+uv sync --extra benchmarks
+```
+
+Each runner produces one paper table as a tidy results CSV:
+
+```bash
+python -m benchmarks.run_classification   # Table 3 (classification AUROC)
+python -m benchmarks.run_regression       # Table 4 (regression RMSE/R2)
+python -m benchmarks.run_robustness       # Table 5 (missingness/noise robustness)
+python -m benchmarks.run_ablation         # Table 7 (FlagGAM ablations)
+python -m benchmarks.run_sensitivity      # Table 8 (hyperparameter sensitivity)
+```
+
+All runners default to `--n-splits 1000`, matching the paper, which takes hours per table.
+Pass `--n-splits 25` for a quick pass while developing or sanity-checking a change.
+
+```bash
+python -m benchmarks.render_tables results/classification.csv --table 3
+```
+
+`render_tables.py` compares a results CSV against the paper's reported values
+(Zhao & Welsch, arXiv:2605.31189, `benchmarks/paper_targets.py`) and flags deltas beyond
+tolerance. Results CSVs are written under `benchmarks/results/` and are gitignored — they are
+run artifacts, not tracked outputs.
+
 ## Development
 
 ```bash
