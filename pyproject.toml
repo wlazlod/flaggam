@@ -14,6 +14,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.4", "black>=24", "mypy>=1.10"]
+benchmarks = [
+    "interpret>=0.6",
+    "imodels>=1.4",
+    "xgboost>=2.0",
+    "ucimlrepo>=0.0.7",
+    "openml>=0.14",
+]
+
+[tool.uv]
+constraint-dependencies = ["numba>=0.58", "llvmlite>=0.41"]
 
 [build-system]
 requires = ["hatchling"]
@@ -39,6 +49,11 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not network'"
+markers = [
+    "network: requires internet download of benchmark datasets",
+    "slow: long-running benchmark test",
+]
 filterwarnings = [
     # parametrize_with_checks yields a generator; this is a sklearn issue, not ours.
     "ignore::pytest.PytestRemovedIn10Warning",
