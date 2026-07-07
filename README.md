@@ -70,6 +70,42 @@ print(explanation)
 #      0 <intercept>      <intercept>    1.0     -0.624096
 ```
 
+## Extensions (beyond the paper)
+
+Three optional modules extend the paper's method; each is an original
+addition not present in Zhao & Welsch (2026) and lives in its own module.
+
+**PD calibration** — diagnostics (reliability curve, Brier, ECE,
+calibration-in-the-large) and recalibration (`platt`, `isotonic`,
+`base_rate`) fitted on data disjoint from head fitting:
+
+```python
+from flaggam import CalibratedFlagGAM, expected_calibration_error
+
+cal = CalibratedFlagGAM(FlagGAMClassifier(random_state=0), method="platt", cv=5)
+cal.fit(X, y)
+pd_hat = cal.predict_proba(X)[:, 1]
+```
+
+**Monotonicity constraints** — regulators often require PD monotone in a
+feature. Because FlagGAM's numerical contributions are step/ramp bases,
+sign constraints give exact monotonicity:
+
+```python
+clf = FlagGAMClassifier(monotonic_constraints={"age": -1}).fit(X, y)  # PD non-increasing in age
+```
+
+**Fairness / proxy audit** — group metrics for a protected attribute and a
+rule-level audit that ranks bases by association with it:
+
+```python
+from flaggam import ProxyAudit, group_metrics
+
+metrics = group_metrics(y, clf.predict_proba(X)[:, 1], A)
+report = ProxyAudit(clf).report(X, A)          # ranked candidate proxies
+clean_clf, trade = ProxyAudit(clf).drop_proxies(X, y, A, threshold=0.3)
+```
+
 ## Citation
 
 If you use this package in research, please cite the papers it implements:
