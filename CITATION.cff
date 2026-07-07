@@ -3,6 +3,7 @@ message: "If you use this software, please cite it as below and the papers it im
 title: "FlagGAM: rule-basis generalized additive models (from-scratch implementation)"
 version: "0.1.0"
 license: Apache-2.0
+repository-code: "https://github.com/wlazlod/flaggam"
 abstract: >
   A from-scratch Python implementation of FlagGAM (Zhao & Welsch, 2026) and the
   Univariate Flagging Algorithm (Sheth et al., 2019).  The package provides
