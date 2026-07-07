@@ -21,7 +21,10 @@ def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
         argv: Command-line arguments (defaults to sys.argv[1:] if None).
         registry: Optional dataset registry for testing (injected by test harness).
     """
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.conditions is not None:
+        parser.error("--conditions is fixed to all five conditions for the robustness runner")
     cfg = RunConfig(
         datasets=args.datasets or list(CLASSIFICATION),
         methods=args.methods,
