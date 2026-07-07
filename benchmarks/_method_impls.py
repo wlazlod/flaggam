@@ -5,6 +5,7 @@ imports and to keep optional-dependency failures local.  Do not import this
 module at the top level of any other module.
 """
 
+import logging
 import warnings
 from typing import Any
 
@@ -15,6 +16,8 @@ import pandas as pd
 # benchmarks.methods is already fully initialised in sys.modules.
 from benchmarks.methods import Method, _num_cat, _select, _tree_ct
 from benchmarks.protocol import score_binary, score_regression, train_val_split
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Guarded optional imports

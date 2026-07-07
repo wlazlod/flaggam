@@ -5,6 +5,7 @@ Every Method.fit(X, y, seed): (1) carve train_val_split(X, y, seed, task);
 training data with the chosen hyperparameters. Test data never enters here.
 """
 
+import logging
 from collections.abc import Callable
 from typing import Any
 
@@ -18,6 +19,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from benchmarks.protocol import score_binary, score_regression, train_val_split
 from flaggam import FlagGAMClassifier, FlagGAMRegressor
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -352,6 +355,7 @@ def get_methods(
     if _glrm_available:
         factories["glrm"] = lambda: GLRMMethod(task)
     else:
+        logger.info("Skipping method %r: %s", "glrm", _glrm_skip)
         skipped["glrm"] = f"aix360 not installed: {_glrm_skip}"
 
     return factories, skipped
