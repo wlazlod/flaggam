@@ -68,14 +68,14 @@ i.e. 2% of the training rows, floored at 20 and capped at 200. Pass an explicit 
 
 Each candidate is tested by comparing the "tail" (rows satisfying the candidate condition)
 against the "baseline" (all other rows) — the baseline is always the complement of the
-tail, never a "central-only" region (see DECISIONS 2).
+tail, never a "central-only" region (see [DECISIONS 2](../DECISIONS.md)).
 
 **Classification** (`task="binary"` or `"multiclass"`):
 
 - **Binary outcome** — a two-sided two-proportion z-test (`screening.two_proportion_test`)
   compares the positive-class rate in the tail vs. the baseline. When any expected cell
   count in the 2x2 table is below 5, the test falls back to Fisher's exact test
-  automatically, with no user-facing switch (see DECISIONS 3). Effect size is the absolute
+  automatically, with no user-facing switch (see [DECISIONS 3](../DECISIONS.md)). Effect size is the absolute
   risk difference (`effect_size="risk_difference"`, the default) or the absolute log-odds
   ratio (`effect_size="log_odds_ratio"`).
 - **Multiclass outcome** — a Pearson chi-square test (`screening.chi_square_test`) on the
@@ -94,7 +94,7 @@ contribution is attributed to in `representation="compact"` (Step 5).
   tail vs. baseline. Effect size is the absolute standardized mean difference (SMD,
   `screening.standardized_mean_difference`, pooled/averaged variance). Ranking by |SMD|
   lets effect size drive selection even when the two sides have very different sample
-  sizes and thus different statistical power (see DECISIONS 5).
+  sizes and thus different statistical power (see [DECISIONS 5](../DECISIONS.md)).
 
 ## Step 3: FDR and winner selection
 
@@ -108,13 +108,13 @@ Among the candidates on a given side that survive `p_adj <= fdr_alpha`, exactly 
 the winning basis for that side — so a numeric feature contributes at most one `low` and
 one `high` threshold (or hinge, for regression), never a whole grid of them. The winner is
 chosen by `max` over `(effect_size, -p_value, -cutoff)`: largest effect size first, ties
-broken by smallest p-value, remaining ties broken by the lowest cutoff (DECISIONS 11). For
+broken by smallest p-value, remaining ties broken by the lowest cutoff ([DECISIONS 11](../DECISIONS.md)). For
 categorical features every surviving level becomes its own `category` basis — there is no
 per-side collapse, since levels are not ordered.
 
 Both the tail and the baseline must independently satisfy `min_support` for a candidate to
-be tested at all (DECISIONS 10); for categorical levels the "rest" group plays the role of
-the baseline (DECISIONS 12).
+be tested at all ([DECISIONS 10](../DECISIONS.md)); for categorical levels the "rest" group plays the role of
+the baseline ([DECISIONS 12](../DECISIONS.md)).
 
 ## Step 4: basis construction
 
@@ -127,7 +127,7 @@ input to `0.0` — except `missing_indicator`, whose entire purpose is to detect
 | `threshold_low` / `threshold_high` | `1{x <= c}` (low) / `1{x >= c}` (high) | classification, numeric features | `0.0` (never fires) |
 | `hinge_low` / `hinge_high` | `(c - x)_+` (low) / `(x - c)_+` (high) | regression, numeric features | `0.0` (never fires) |
 | `category` | `1{x == level}` | classification and regression, categorical features | `0.0` (never fires) |
-| `trend` | `x - mean(x)` (centered, added unconditionally, not screened) | regression, numeric features | `0.0`, equivalent to imputing the feature mean (see DECISIONS 9) |
+| `trend` | `x - mean(x)` (centered, added unconditionally, not screened) | regression, numeric features | `0.0`, equivalent to imputing the feature mean (see [DECISIONS 9](../DECISIONS.md)) |
 | `missing_indicator` | `1{x is missing}` | any task, only when `missing="indicator"` | fires (`1.0`) exactly when `x` is missing |
 
 `est.core_.bases_` holds the full list of fitted `Basis` objects; each exposes `.feature`,
@@ -138,7 +138,7 @@ input to `0.0` — except `missing_indicator`, whose entire purpose is to detect
 ## Step 5: the additive head
 
 `Z(X)` — the sparse matrix of all discovered basis evaluations — is passed unstandardised
-to the prediction head (see DECISIONS 8):
+to the prediction head (see [DECISIONS 8](../DECISIONS.md)):
 
 - **Additive head** (`head="additive"`, the default) — an L2-penalized logistic regression
   (classification, parameter `C`) or ridge regression (regression, parameter `alpha`) fit
@@ -156,7 +156,7 @@ to the prediction head (see DECISIONS 8):
   *exact* monotonicity of that feature's additive contribution, not a heuristic
   approximation; it supports binary classification and regression only, and a list-valued
   `C`/`alpha` falls back to `1.0` (CV tuning of the constrained head is out of scope). See
-  [Extensions](extensions.md) for usage and DECISIONS 20 for the full derivation.
+  [Extensions](extensions.md) for usage and [DECISIONS 20](../DECISIONS.md) for the full derivation.
 - **Compact representation** (`representation="compact"`) — instead of feeding the full
   `Z(X)` to the head, collapses it into an `(n, K)` matrix of per-class, optionally
   feature-weighted sums of triggered flags (`weighting.compact_scores`); hinge and trend
@@ -180,7 +180,7 @@ The `missing` parameter controls what happens to observations where a feature is
   screens each feature's missingness pattern itself: if a feature's missing/non-missing
   split correlates with the outcome (two-proportion test for binary, chi-square for
   multiclass/regression) and both groups satisfy `min_support`, BH-adjusted across features
-  (DECISIONS 13), a `missing_indicator` basis is added for that feature. This is the only
+  ([DECISIONS 13](../DECISIONS.md)), a `missing_indicator` basis is added for that feature. This is the only
   basis kind that fires *because* a value is missing rather than despite it.
 
 ## From model to explanation
