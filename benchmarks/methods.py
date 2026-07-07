@@ -150,7 +150,7 @@ class LogisticMethod(Method):
 class RidgeMethod(Method):
     """Ridge regression: StandardScaler + OHE + Ridge.
 
-    needs_imputation=True; tuning grid: alpha ∈ {0.01, 0.1, 1, 10}.
+    needs_imputation=True; tuning grid: alpha ∈ {1e-3, 1e-2, 0.1, 1, 10}.
     """
 
     name = "ridge"
