@@ -1,7 +1,7 @@
 """Screening statistics for rule discovery.
 
 These are screening tools, not confirmatory inference (Zhao & Welsch,
-arXiv:2605.31189, §5 of the paper's methodology).
+arXiv:2605.31189).
 Two-proportion test falls back to Fisher's exact test when any expected
 cell count is below 5 (documented decision, spec §6.3).
 """

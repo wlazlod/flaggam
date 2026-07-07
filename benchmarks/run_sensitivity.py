@@ -29,7 +29,9 @@ _DATASETS = ["bank_marketing"]
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Run the Table 8 sensitivity benchmark.")
-    add_common_args(p)
+    add_common_args(
+        p, conditions_help="Fixed to clean/miss50/noise50 for this runner; not overridable."
+    )
     p.set_defaults(out="benchmarks/results/sensitivity.csv")
     return p
 

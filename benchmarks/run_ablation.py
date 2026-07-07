@@ -22,7 +22,9 @@ _DATASETS = ["heart", "adult", "bank_marketing"]
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Run the Table 7 ablation benchmark.")
-    add_common_args(p)
+    add_common_args(
+        p, conditions_help="Fixed to clean/miss50/noise50 for this runner; not overridable."
+    )
     p.set_defaults(out="benchmarks/results/ablation.csv")
     return p
 
