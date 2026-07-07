@@ -202,3 +202,63 @@ Each entry references the source that drove the decision.
     values, and `NotImplementedError` for a resolved multiclass task — monotonic
     constraints support binary classification and regression only.
     *(spec §8.2; original addition, not in paper)*
+
+21. **Fairness (`flaggam/fairness.py`): group metrics with max-minus-min gaps;
+    binarized-indicator association (Cramér's V vs. |point-biserial|) for the
+    proxy audit; `threshold=0.2` is a screening heuristic, not a legal
+    standard; `drop_proxies` scoped to fitted binary/`representation="full"`/
+    `head="additive"` classifiers.**
+    `group_metrics(y_true, y_prob, A, threshold=0.5, n_bins=10)` computes, per
+    level of the protected attribute `A`, `n`, `base_rate`, `mean_predicted`,
+    `selection_rate` (fraction with `y_prob >= threshold`), `tpr` (selection
+    rate among true positives), `auroc`, and `ece` (via `expected_calibration_
+    error` from Task E1); it raises `ValueError` for non-binary `y_true`,
+    matching the binary-only PD scope used elsewhere in the fairness/
+    calibration modules. `auroc` and `tpr` are `NaN` for single-class groups
+    (no ranking/positive-rate signal is defined there) and such groups are
+    excluded from the corresponding gap. The three top-level `gaps` —
+    `demographic_parity_diff`, `equal_opportunity_diff`, `auroc_gap` — are
+    each the max-minus-min of the per-group column across the non-`NaN`
+    groups; this is the simplest, most common operationalization of "gap"
+    fairness metrics and requires no reference/privileged group to be named.
+
+    `ProxyAudit(estimator).report(X, A, threshold=0.2)` ranks every fitted
+    rule basis in `estimator.core_.bases_` by its association with `A`. The
+    association is computed on the BINARIZED basis indicator `z = (Z(X)[:,
+    j] > 0)`, not on the raw (possibly continuous) basis output: this is
+    exact for `threshold_low/high`, `category`, and `missing_indicator`
+    bases, which are already 0/1-valued, but is a documented approximation
+    for `hinge_low/high` and `trend` bases, which are continuous — the audit
+    only asks whether the rule fires, not by how much. When `A` is numeric
+    (`np.issubdtype(A.dtype, np.number)`), association is `|point-biserial
+    r|` between the binary indicator and `A`; otherwise (categorical/object
+    `A`) association is Cramér's V of the indicator-by-`A` contingency table.
+    Both statistics degenerate to `0.0` when the indicator has fewer than two
+    distinct values (a basis that never/always fires carries no association
+    signal, avoiding a divide-by-zero). The report is sorted descending by
+    association (stable sort, ties keep basis-discovery order) and
+    `flagged = association > threshold`. The default `threshold=0.2` is a
+    heuristic screening level borrowed from conventional "small-to-moderate
+    effect" cutoffs for these statistics — it is not a legal or regulatory
+    fair-lending standard (e.g., not the four-fifths rule) and callers doing
+    compliance work must supply their own threshold.
+
+    `ProxyAudit.drop_proxies(X, y, A, threshold=0.2)` deep-copies the fitted
+    estimator, drops every basis whose `rule` (its unique `.name`) is flagged
+    by `report`, and refits ONLY the head — a fresh `AdditiveHead("binary",
+    C=estimator.C, random_state=estimator.random_state)` — on the reduced
+    `Z(X)`; rule discovery itself is not re-run. It raises `ValueError`
+    unless the estimator is a fitted binary classifier (`len(classes_) ==
+    2`) with `representation="full"` and `head="additive"`: compact-score
+    columns are feature-weighted sums across multiple bases and don't map
+    1:1 back to a single dropped basis, a `FlexibleHead` has no per-basis
+    coefficient to drop, and multiclass PD gaps are out of scope for this
+    module (consistent with `group_metrics` and `CalibratedFlagGAM`).  It
+    returns `(new_estimator, trade)` where `trade` is a one-row DataFrame of
+    `n_dropped`, `auroc_before/after`, and `dp_diff_before/after` (the
+    `demographic_parity_diff` gap from `group_metrics`), so a caller can see
+    the fairness/accuracy trade-off of the drop in one call. The original
+    estimator's `core_.bases_` is untouched because `drop_proxies` mutates
+    only the deep-copied `new_est.core_.bases_` list.
+    *(original addition, not in paper; operationalizes the paper's Impact
+    Statement on proxy/bias risk in selected rules)*
