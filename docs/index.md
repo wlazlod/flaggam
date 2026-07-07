@@ -13,7 +13,9 @@ function ("flag"), and the flags together form a compact, human-readable rule ba
 A linear or logistic head is then fitted on top of the rule basis, producing a model
 whose predictions are sums of individually interpretable flag contributions. Because
 every flag corresponds to a concrete data condition (e.g., "age >= 55"), the resulting
-model supports exact rule extraction and feature-level attribution without approximation.
+model supports exact rule extraction and feature-level attribution without approximation. See
+[Algorithm](user-guide/algorithm.md) for the full pipeline walkthrough, from candidate
+generation through the fitted additive head.
 
 This package is a from-scratch Python implementation of FlagGAM (Zhao & Welsch,
 arXiv:2605.31189) and the Univariate Flagging Algorithm (Sheth et al., PLOS ONE 2019). It

@@ -5,7 +5,8 @@ category conditions — through a univariate screening pass, then fits a linear/
 head on top of the resulting basis matrix `Z(X)`. This page explains how that screening
 pass works: the Univariate Flagging Algorithm (UFA), the multiple-testing correction
 applied across candidates, and the support floor that keeps individual rules statistically
-meaningful.
+meaningful. See [Algorithm](algorithm.md) for the full walkthrough, including the pipeline
+schema and how the additive head is fit on top of the resulting basis matrix.
 
 ## The Univariate Flagging Algorithm (UFA)
 

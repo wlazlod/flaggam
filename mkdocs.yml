@@ -39,6 +39,7 @@ nav:
   - Getting Started: getting-started.md
   - Guidebook: notebooks/german_credit.ipynb
   - User Guide:
+    - Algorithm: user-guide/algorithm.md
     - Rules & Screening: user-guide/rules-and-screening.md
     - Extensions: user-guide/extensions.md
     - Benchmarks: user-guide/benchmarks.md
@@ -90,7 +91,11 @@ plugins:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
