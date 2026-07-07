@@ -102,3 +102,14 @@ def test_bounds_for_bases_table() -> None:
     assert bounds_for_bases([lo, hi, cat], {"age": -1}) == [
         (0.0, None), (None, 0.0), (None, None),
     ]
+
+
+def test_export_rules_and_explain_on_constrained_fit() -> None:
+    """Regression: monotonic-constrained heads must yield real weights on export."""
+    X, y = _risky_young(n=800)
+    clf = FlagGAMClassifier(monotonic_constraints={"age": -1}, random_state=0).fit(X, y)
+    rules = clf.export_rules()
+    assert len(rules) > 0
+    assert rules["weight"].notna().all(), "constrained head must yield real weights"
+    exp = clf.explain(X.head(3))
+    assert not exp.empty
