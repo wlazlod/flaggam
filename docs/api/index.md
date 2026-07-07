@@ -31,3 +31,4 @@ Original additions beyond Zhao & Welsch (2026); see [Extensions](../user-guide/e
 |--------|-------------|
 | [`Datasets`](datasets.md) | Benchmark dataset loaders with local caching |
 | [`Plots`](plots.md) | Matplotlib visualization helpers (optional `viz` extra) |
+| [`Explorer`](explorer.md) | Self-contained interactive HTML rules explorer |

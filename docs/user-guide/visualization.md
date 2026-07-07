@@ -1,5 +1,22 @@
 # Visualization
 
+## Interactive rules explorer
+
+`export_rules_html` renders a fitted estimator's rules as a single dependency-free HTML
+file: no network access, no external CSS/JS, safe to open offline or embed in an iframe.
+It shows a dropdown per feature, the fitted shape curve (or level bars for categorical
+features), and a table of the rules contributing to that feature. The embed below is
+generated from a `FlagGAMClassifier` fit on the German Credit dataset.
+
+```python
+from flaggam import export_rules_html
+
+export_rules_html(clf, path="rules.html")  # open in any browser
+```
+
+<iframe src="../../assets/rules-explorer.html" width="100%" height="640"
+        style="border:1px solid var(--md-default-fg-color--lightest);border-radius:6px;"></iframe>
+
 `flaggam.plots` provides matplotlib helpers for fitted estimators and diagnostics. This
 module requires the optional `viz` extra:
 

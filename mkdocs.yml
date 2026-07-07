@@ -59,6 +59,7 @@ nav:
     - Monotonic: api/monotonic.md
     - Fairness: api/fairness.md
     - Plots: api/plots.md
+    - Explorer: api/explorer.md
   - Project:
     - Changelog: changelog.md
     - Decisions: DECISIONS.md
