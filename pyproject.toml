@@ -14,6 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.4", "black>=24", "mypy>=1.10"]
+viz = ["matplotlib>=3.8"]
 benchmarks = [
     "interpret>=0.6",
     "imodels>=1.4",

@@ -11,6 +11,14 @@ from .datasets import CLASSIFICATION, REGRESSION, DatasetSpec
 from .estimator import FlagGAMClassifier, FlagGAMRegressor
 from .fairness import ProxyAudit, group_metrics
 from .monotonic import MonotonicAdditiveHead, bounds_for_bases
+from .plots import (
+    plot_group_metrics,
+    plot_proxy_association,
+    plot_reliability,
+    plot_rule_importance,
+    plot_shape,
+    plot_waterfall,
+)
 
 __version__ = "0.1.0"
 
@@ -30,4 +38,10 @@ __all__ = [
     "bounds_for_bases",
     "ProxyAudit",
     "group_metrics",
+    "plot_shape",
+    "plot_rule_importance",
+    "plot_waterfall",
+    "plot_reliability",
+    "plot_proxy_association",
+    "plot_group_metrics",
 ]

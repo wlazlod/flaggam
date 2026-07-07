@@ -663,12 +663,16 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+viz = [
+    { name = "matplotlib" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24" },
     { name = "imodels", marker = "extra == 'benchmarks'", specifier = ">=1.4" },
     { name = "interpret", marker = "extra == 'benchmarks'", specifier = ">=0.6" },
+    { name = "matplotlib", marker = "extra == 'viz'", specifier = ">=3.8" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "openml", marker = "extra == 'benchmarks'", specifier = ">=0.14" },
@@ -680,7 +684,7 @@ requires-dist = [
     { name = "ucimlrepo", marker = "extra == 'benchmarks'", specifier = ">=0.0.7" },
     { name = "xgboost", marker = "extra == 'benchmarks'", specifier = ">=2.0" },
 ]
-provides-extras = ["dev", "benchmarks"]
+provides-extras = ["dev", "viz", "benchmarks"]
 
 [[package]]
 name = "flask"
