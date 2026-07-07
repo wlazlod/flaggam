@@ -36,6 +36,10 @@ logger = logging.getLogger(__name__)
 _MISS_RHO = {"miss25": 0.25, "miss50": 0.50}
 _NOISE_RHO = {"noise25": 0.25, "noise50": 0.50}
 _CONDITIONS = ["clean", "miss25", "miss50", "noise25", "noise50"]
+# Stable per-condition salt for rng seeding (see _corrupted_frame). Never derive
+# this from hash(condition): Python's built-in hash() on strings is
+# process-randomized (PYTHONHASHSEED), which would break cross-run reproducibility.
+_CONDITION_SALT = {"clean": 0, "miss25": 1, "miss50": 2, "noise25": 3, "noise50": 4}
 
 
 @dataclass(frozen=True)
@@ -72,7 +76,7 @@ def _corrupted_frame(
 ) -> pd.DataFrame:
     if condition == "clean":
         return X_test
-    rng = np.random.default_rng((seed, hash(condition) % 2**16))
+    rng = np.random.default_rng((seed, _CONDITION_SALT[condition]))
     if condition in _MISS_RHO:
         return corrupt_missing(X_test, _MISS_RHO[condition], rng)
     if condition in _NOISE_RHO:
@@ -111,6 +115,10 @@ def run_benchmark(
 
             rows: list[dict[str, Any]] = []
             for name in method_names:
+                # Buffer this method's rows locally; only merge into `rows` if the
+                # full condition loop completes without exception, so a failure on
+                # one condition never leaves partial rows from earlier conditions.
+                method_rows: list[dict[str, Any]] = []
                 try:
                     method = factories[name]()
                     fit_X = apply_impute(X_train, stats) if method.needs_imputation else X_train
@@ -124,9 +132,13 @@ def run_benchmark(
                             else score_regression(y_test, scores)
                         )
                         for metric, value in metrics.items():
-                            rows.append(result_row(ds_name, name, seed, cond, metric, value))
+                            method_rows.append(
+                                result_row(ds_name, name, seed, cond, metric, value)
+                            )
                 except Exception:
                     logger.exception(
                         "method %r failed on dataset=%r seed=%d", name, ds_name, seed
                     )
+                else:
+                    rows.extend(method_rows)
             write_rows(rows, cfg.out)

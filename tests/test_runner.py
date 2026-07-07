@@ -40,6 +40,43 @@ def test_run_benchmark_deterministic(tmp_path) -> None:
     pd.testing.assert_frame_equal(pd.read_csv(a), pd.read_csv(b))
 
 
+def test_run_benchmark_no_partial_rows_on_method_failure(tmp_path, monkeypatch) -> None:
+    """A method that fails partway through its condition loop must yield zero rows,
+    not partial rows from the conditions it completed before failing."""
+    from benchmarks.methods import get_methods as real_get_methods
+
+    class _FlakyMethod:
+        name = "flaky"
+        needs_imputation = False
+
+        def __init__(self) -> None:
+            self._calls = 0
+
+        def fit(self, X_train, y_train, seed):
+            return self
+
+        def predict_scores(self, X):
+            self._calls += 1
+            if self._calls > 1:
+                raise RuntimeError("boom on second condition")
+            return np.full(len(X), 0.5)
+
+    def fake_get_methods(task):
+        factories, skipped = real_get_methods(task)
+        factories["flaky"] = _FlakyMethod
+        return factories, skipped
+
+    monkeypatch.setattr("benchmarks.runner.get_methods", fake_get_methods)
+
+    out = tmp_path / "res.csv"
+    cfg = RunConfig(datasets=["toy"], methods=["logistic", "flaky"],
+                    seeds=range(1), conditions=["clean", "miss50"], out=out)
+    run_benchmark(cfg, task="binary", registry=TOY)
+    df = pd.read_csv(out)
+    assert (df.method == "flaky").sum() == 0
+    assert set(df[df.method == "logistic"].condition) == {"clean", "miss50"}
+
+
 def test_render_tables_smoke(tmp_path, capsys) -> None:
     from benchmarks.render_tables import render
     out = tmp_path / "res.csv"

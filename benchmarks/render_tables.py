@@ -79,7 +79,11 @@ def render(csv_path: Path, table: int | None) -> None:
 
     if table == 5:
         drops = _paired_drops(df)
-        macro = drops.groupby(["method", "condition"])["drop"].mean()
+        # Two-stage macro-average: mean per (dataset, method, condition) first, then
+        # mean across datasets, so datasets with unequal row counts (e.g. from a
+        # partial method failure) don't get row-count-weighted in the average.
+        per_dataset = drops.groupby(["dataset", "method", "condition"])["drop"].mean()
+        macro = per_dataset.groupby(["method", "condition"]).mean()
         pivot = macro.unstack()
         lines.append("Table 5: mean paired AUROC drop (macro-averaged over datasets)")
         lines.append(pivot.to_string())
@@ -99,7 +103,7 @@ def render(csv_path: Path, table: int | None) -> None:
                 ]
                 lines.append(f"{ds}: " + ", ".join(parts))
             if table == 3:
-                ours = {(meth, ds): v for (ds, meth), v in mean.items()}
+                ours: dict[tuple, float] = {(meth, ds): v for (ds, meth), v in mean.items()}
                 lines.extend(_delta_lines(ours, TABLE3))
             elif table == 4:
                 ours = {(meth, ds, metric): v for (ds, meth), v in mean.items()}

@@ -44,7 +44,7 @@ line-length = 100
 
 [tool.mypy]
 python_version = "3.11"
-packages = ["flaggam"]
+packages = ["flaggam", "benchmarks"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
