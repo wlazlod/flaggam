@@ -144,7 +144,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "scikit-learn", specifier = ">=1.4" },
+    { name = "scikit-learn", specifier = ">=1.8" },
     { name = "scipy", specifier = ">=1.11" },
 ]
 provides-extras = ["dev"]

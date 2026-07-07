@@ -125,6 +125,20 @@ def test_regressor_alpha_list(reg_data) -> None:
     assert reg.predict(X).shape == y.shape
 
 
+def test_invalid_task_raises() -> None:
+    X = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+    y = np.array([0, 1, 0])
+    with pytest.raises(ValueError, match="task"):
+        FlagGAMClassifier(task="regression").fit(X, y)
+
+
+def test_invalid_representation_raises() -> None:
+    X = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+    y = np.array([0, 1, 0])
+    with pytest.raises(ValueError, match="representation"):
+        FlagGAMClassifier(representation="compct").fit(X, y)
+
+
 def test_regressor_clone(reg_data) -> None:
     X, y = reg_data
     reg = FlagGAMRegressor(random_state=0)

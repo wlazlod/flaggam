@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def export_rules(estimator) -> pd.DataFrame:
+    if getattr(estimator, "representation", "full") == "compact":
+        raise ValueError(
+            "export_rules requires representation='full'; under 'compact' the head "
+            "coefficients are per-class scores, not per-rule weights"
+        )
     meta = estimator.core_.metadata()
     head = estimator.head_
     if not isinstance(head, AdditiveHead) or head.coef_.size == 0:
@@ -31,6 +36,11 @@ def export_rules(estimator) -> pd.DataFrame:
 
 
 def explain(estimator, X) -> pd.DataFrame:
+    if getattr(estimator, "representation", "full") == "compact":
+        raise ValueError(
+            "explain requires representation='full'; under 'compact' the head "
+            "coefficients are per-class scores, not per-rule weights"
+        )
     head = estimator.head_
     if not isinstance(head, AdditiveHead):
         raise ValueError("reason codes require the additive head")

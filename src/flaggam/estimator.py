@@ -162,6 +162,21 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
         """Discover flag bases, fit head on Z(X)."""
         if y is None:
             raise ValueError("requires y to be passed, but the target y is None")
+        if self.task not in {"auto", "binary", "multiclass"}:
+            raise ValueError(
+                f"task={self.task!r} is not recognised; "
+                "valid values are 'auto', 'binary', 'multiclass'"
+            )
+        if self.representation not in {"full", "compact"}:
+            raise ValueError(
+                f"representation={self.representation!r} is not recognised; "
+                "valid values are 'full', 'compact'"
+            )
+        if self.missing not in {"no_evidence", "indicator"}:
+            raise ValueError(
+                f"missing={self.missing!r} is not recognised; "
+                "valid values are 'no_evidence', 'indicator'"
+            )
         df = self._to_frame(X, reset=True)
         y = np.asarray(y)
         if len(df) != len(y):
@@ -269,6 +284,11 @@ class FlagGAMRegressor(RegressorMixin, _BaseFlagGAM):
         """Discover flag bases, fit regression head on Z(X)."""
         if y is None:
             raise ValueError("requires y to be passed, but the target y is None")
+        if self.missing not in {"no_evidence", "indicator"}:
+            raise ValueError(
+                f"missing={self.missing!r} is not recognised; "
+                "valid values are 'no_evidence', 'indicator'"
+            )
         df = self._to_frame(X, reset=True)
         y = np.asarray(y)
         if y.dtype.kind == "c":
