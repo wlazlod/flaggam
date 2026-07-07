@@ -269,7 +269,6 @@ function renderNumeric(svg, feat) {
 function renderCategorical(svg, feat) {
   const W = 700, H = 360, mL = 60, mR = 20, mT = 20, mB = 60;
   const bars = feat.bars;
-  const wMax = Math.max(...bars.map(b => Math.abs(b.weight)), 1e-9);
   const yMin = Math.min(0, ...bars.map(b => b.weight));
   const yMax = Math.max(0, ...bars.map(b => b.weight));
   const sy = y => H - mB - (y - yMin) / (yMax - yMin || 1) * (H - mT - mB);

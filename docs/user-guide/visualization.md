@@ -4,9 +4,10 @@
 
 `export_rules_html` renders a fitted estimator's rules as a single dependency-free HTML
 file: no network access, no external CSS/JS, safe to open offline or embed in an iframe.
-It shows a dropdown per feature, the fitted shape curve (or level bars for categorical
+It shows a feature-selector dropdown, the fitted shape curve (or level bars for categorical
 features), and a table of the rules contributing to that feature. The embed below is
-generated from a `FlagGAMClassifier` fit on the German Credit dataset.
+generated from a `FlagGAMClassifier` fit on the German Credit dataset — regenerate it
+with `uv run python scripts/make_rules_explorer.py`.
 
 ```python
 from flaggam import export_rules_html
