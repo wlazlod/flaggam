@@ -93,3 +93,18 @@ def test_cli_parses() -> None:
         ["--datasets", "german_credit", "--n-splits", "3", "--out", "/tmp/x.csv"]
     )
     assert args.datasets == ["german_credit"] and args.n_splits == 3
+
+
+def test_robustness_runner_and_drop_table(tmp_path, capsys) -> None:
+    import benchmarks.run_robustness as rr
+    from benchmarks.render_tables import render
+
+    out = tmp_path / "rob.csv"
+    args = ["--datasets", "toy", "--methods", "flaggam", "--n-splits", "2", "--out", str(out)]
+    # registry injection for the CLI path: rr.main accepts a registry kwarg for tests
+    rr.main(args, registry=TOY)
+    df = pd.read_csv(out)
+    assert set(df.condition) == {"clean", "miss25", "miss50", "noise25", "noise50"}
+    render(out, table=5)
+    text = capsys.readouterr().out
+    assert "miss50" in text and "drop" in text.lower()

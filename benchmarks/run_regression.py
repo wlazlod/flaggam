@@ -14,7 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
     args = build_parser().parse_args(argv)
     cfg = RunConfig(
         datasets=args.datasets or list(REGRESSION),
@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> None:
         conditions=args.conditions or ["clean"],
         out=Path(args.out),
     )
-    run_benchmark(cfg, task="regression")
+    run_benchmark(cfg, task="regression", registry=registry)
 
 
 if __name__ == "__main__":
