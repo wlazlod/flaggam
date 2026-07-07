@@ -13,6 +13,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from .core import FlagCoreModule
 from .heads import AdditiveHead, FlexibleHead
+from .monotonic import _validate_constraints
 from .weighting import compact_scores, feature_weights
 
 
@@ -194,7 +195,17 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
             task = "binary" if len(self.classes_) == 2 else "multiclass"
 
         if self.monotonic_constraints is not None:
-            raise NotImplementedError("monotonic constraints ship in the extensions plan")
+            _validate_constraints(self.monotonic_constraints, list(df.columns))
+            if self.head != "additive":
+                raise ValueError("monotonic_constraints require head='additive'")
+            if self.representation == "compact":
+                raise ValueError(
+                    "monotonic_constraints are incompatible with representation='compact'"
+                )
+            if task == "multiclass":
+                raise NotImplementedError(
+                    "monotonic constraints support binary classification only"
+                )
         if self.head == "flexible" and self.flexible_estimator is None:
             raise ValueError("head='flexible' requires flexible_estimator")
 
@@ -216,7 +227,14 @@ class FlagGAMClassifier(ClassifierMixin, _BaseFlagGAM):
             )
 
         if self.head == "additive":
-            self.head_ = AdditiveHead(task, C=self.C, random_state=self.random_state)
+            if self.monotonic_constraints is not None:
+                from .monotonic import MonotonicAdditiveHead, bounds_for_bases
+
+                C = 1.0 if isinstance(self.C, (list, tuple)) else self.C
+                bounds = bounds_for_bases(self.core_.bases_, dict(self.monotonic_constraints))
+                self.head_ = MonotonicAdditiveHead(task, bounds, C=C)
+            else:
+                self.head_ = AdditiveHead(task, C=self.C, random_state=self.random_state)
         else:
             self.head_ = FlexibleHead(self.flexible_estimator, task, random_state=self.random_state)
         self.head_.fit(H, y_enc)
@@ -307,15 +325,24 @@ class FlagGAMRegressor(RegressorMixin, _BaseFlagGAM):
                 f"[{len(df)}, {len(y)}]"
             )
         if self.monotonic_constraints is not None:
-            raise NotImplementedError("monotonic constraints ship in the extensions plan")
+            _validate_constraints(self.monotonic_constraints, list(df.columns))
+            if self.head != "additive":
+                raise ValueError("monotonic_constraints require head='additive'")
         if self.head == "flexible" and self.flexible_estimator is None:
             raise ValueError("head='flexible' requires flexible_estimator")
         self.core_ = self._build_core("regression").fit(df, y)
         Z = self.core_.transform(df)
         if self.head == "additive":
-            self.head_ = AdditiveHead(
-                "regression", alpha=self.alpha, random_state=self.random_state
-            )
+            if self.monotonic_constraints is not None:
+                from .monotonic import MonotonicAdditiveHead, bounds_for_bases
+
+                alpha = 1.0 if isinstance(self.alpha, (list, tuple)) else self.alpha
+                bounds = bounds_for_bases(self.core_.bases_, dict(self.monotonic_constraints))
+                self.head_ = MonotonicAdditiveHead("regression", bounds, alpha=alpha)
+            else:
+                self.head_ = AdditiveHead(
+                    "regression", alpha=self.alpha, random_state=self.random_state
+                )
         else:
             self.head_ = FlexibleHead(
                 self.flexible_estimator, "regression", random_state=self.random_state

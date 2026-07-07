@@ -6,8 +6,14 @@ import numpy as np
 import pandas as pd
 
 from .heads import AdditiveHead
+from .monotonic import MonotonicAdditiveHead
 
 logger = logging.getLogger(__name__)
+
+# MonotonicAdditiveHead is a drop-in linear head (same coef_/intercept_ shapes)
+# used in place of AdditiveHead when monotonic_constraints is set; both are
+# additive-interpretable for rule export and reason codes.
+_ADDITIVE_HEADS = (AdditiveHead, MonotonicAdditiveHead)
 
 
 def export_rules(estimator) -> pd.DataFrame:
@@ -18,11 +24,11 @@ def export_rules(estimator) -> pd.DataFrame:
         )
     meta = estimator.core_.metadata()
     head = estimator.head_
-    if not isinstance(head, AdditiveHead) or head.coef_.size == 0:
-        if not isinstance(head, AdditiveHead):
+    if not isinstance(head, _ADDITIVE_HEADS) or head.coef_.size == 0:
+        if not isinstance(head, _ADDITIVE_HEADS):
             logger.warning("flexible head: additive interpretability is not preserved; weight=NaN")
         meta["weight"] = np.nan
-        meta["additive_interpretable"] = isinstance(head, AdditiveHead)
+        meta["additive_interpretable"] = isinstance(head, _ADDITIVE_HEADS)
         return meta
     coef = np.atleast_2d(head.coef_)
     if coef.shape[0] == 1:
@@ -42,7 +48,7 @@ def explain(estimator, X) -> pd.DataFrame:
             "coefficients are per-class scores, not per-rule weights"
         )
     head = estimator.head_
-    if not isinstance(head, AdditiveHead):
+    if not isinstance(head, _ADDITIVE_HEADS):
         raise ValueError("reason codes require the additive head")
     Z_sparse = estimator.transform(X)
     Z = Z_sparse.toarray()

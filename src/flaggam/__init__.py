@@ -9,6 +9,7 @@ from .calibration import (
 )
 from .datasets import CLASSIFICATION, REGRESSION, DatasetSpec
 from .estimator import FlagGAMClassifier, FlagGAMRegressor
+from .monotonic import MonotonicAdditiveHead, bounds_for_bases
 
 __version__ = "0.1.0"
 
@@ -24,4 +25,6 @@ __all__ = [
     "brier_score",
     "expected_calibration_error",
     "calibration_in_the_large",
+    "MonotonicAdditiveHead",
+    "bounds_for_bases",
 ]

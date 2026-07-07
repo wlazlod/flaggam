@@ -158,3 +158,47 @@ Each entry references the source that drove the decision.
     defined only for `P(y=1)`. This module is an original addition; Zhao & Welsch (2026)
     evaluates only ranking metrics and does not address probability calibration.
     *(spec §8.1; original addition, not in paper)*
+
+20. **Monotonicity (`flaggam/monotonic.py`): sign-constrained bases give exact
+    monotonicity; box-constrained L-BFGS-B head; binary + regression scope; list-valued
+    C/alpha fall back to 1.0.**
+    `monotonic_constraints` is a dict `{feature_name: +1|-1|0}`; `+1` means risk
+    non-decreasing in the feature, `-1` non-increasing, `0` (or an absent key)
+    unconstrained. Because every numerical feature's bases are themselves monotone
+    step/ramp functions of x — tail flags (`threshold_low`/`threshold_high`), tail
+    hinges (`hinge_low`/`hinge_high`), and the linear `trend` term — constraining each
+    coefficient's sign is sufficient (not merely heuristic) to make the resulting
+    additive contribution exactly monotone in x; no post-hoc isotonic projection is
+    needed. `category` and `missing`(`_indicator`) bases are never constrained (spec
+    §8.2): a categorical level or an is-missing flag has no defined "direction" in x.
+    `bounds_for_bases(bases, constraints)` maps each basis to a `(low, high)` box bound
+    on its coefficient per this table (for `+1`; `-1` mirrors by swapping the tuple):
+
+    | basis kind        | active for | bound on θ    |
+    |-------------------|------------|---------------|
+    | `threshold_low`   | small x    | `(None, 0.0)` |
+    | `threshold_high`  | large x    | `(0.0, None)` |
+    | `hinge_low`       | small x    | `(None, 0.0)` |
+    | `hinge_high`      | large x    | `(0.0, None)` |
+    | `trend`           | linear     | `(0.0, None)` |
+    | `category`, `missing` | —      | `(None, None)`|
+
+    `MonotonicAdditiveHead` is a drop-in replacement for `AdditiveHead` when
+    `monotonic_constraints is not None`; it fits an intercept-unpenalized,
+    intercept-unbounded L2-penalized loss with `scipy.optimize.minimize(method=
+    "L-BFGS-B")` under the per-coefficient box bounds, matching sklearn's primal
+    objective forms: binary is `F(θ, b) = 0.5·θᵀθ + C·Σᵢ[logaddexp(0, mᵢ) − yᵢmᵢ]` with
+    `m = Zθ + b` (gradients `∂θ = θ + C·Zᵀ(expit(m) − y)`, `∂b = C·Σ(expit(m) − y)`);
+    regression is ridge, `F(θ, b) = ‖y − m‖² + α·θᵀθ` (gradients `∂θ = −2Zᵀr + 2αθ`,
+    `∂b = −2Σr` with `r = y − m`). The estimator routes `C`/`alpha` straight through
+    when scalar; when the caller passed a list/tuple (the `AdditiveHead` CV-tuning
+    convention), the constrained path falls back to the spec default of `1.0` — CV
+    tuning of the constrained head is out of scope for this task. `FlagGAMClassifier`/
+    `FlagGAMRegressor.fit` raise `ValueError` when `monotonic_constraints` is set with
+    `head != "additive"` (a flexible estimator has no per-basis coefficient to
+    constrain) or, for the classifier, `representation == "compact"` (compact score
+    columns don't map 1:1 to feature bases, so there is nothing to constrain a sign
+    on); they raise `ValueError` for unknown feature names or out-of-`{+1,-1,0}`
+    values, and `NotImplementedError` for a resolved multiclass task — monotonic
+    constraints support binary classification and regression only.
+    *(spec §8.2; original addition, not in paper)*
