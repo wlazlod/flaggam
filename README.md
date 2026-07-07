@@ -177,9 +177,10 @@ uv run mkdocs serve  # Preview documentation locally
 
 ## Status
 
-Core estimators, screening, basis construction, missing-indicator discovery, feature weighting,
-and rule inspection are implemented and pass `check_estimator`.  Benchmarks (German Credit and
-other datasets), calibration, monotonic constraints, and fairness extensions are forthcoming.
+Feature-complete at 0.1.0: core estimators pass `check_estimator` with no exclusions; the
+benchmark suite reproduces the paper's protocol (the German Credit smoke gate lands within
+0.002 of the paper's reported AUROC); calibration, monotonicity, fairness, and visualization
+extensions are implemented and documented.  See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 
