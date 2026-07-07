@@ -1,0 +1,3 @@
+# Weighting
+
+::: flaggam.weighting

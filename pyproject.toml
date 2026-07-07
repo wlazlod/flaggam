@@ -12,9 +12,20 @@ dependencies = [
     "scikit-learn>=1.8",
 ]
 
+[project.urls]
+Homepage = "https://github.com/wlazlod/flaggam"
+Documentation = "https://wlazlod.github.io/flaggam/"
+Changelog = "https://github.com/wlazlod/flaggam/blob/main/CHANGELOG.md"
+Issues = "https://github.com/wlazlod/flaggam/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.4", "black>=24", "mypy>=1.10"]
 viz = ["matplotlib>=3.8"]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+    "mkdocs-jupyter>=0.24",
+]
 benchmarks = [
     "interpret>=0.6",
     "imodels>=1.4",

@@ -1,0 +1,3 @@
+# Monotonic
+
+::: flaggam.monotonic
