@@ -126,7 +126,10 @@ class ProxyAudit:
         Supports only fitted binary classifiers with `representation="full"`
         and `head="additive"`: compact-score columns don't map 1:1 to bases
         and flexible heads can't be refit column-wise; multiclass is out of
-        PD scope (see docs/DECISIONS.md entry 21).
+        PD scope. Estimators fitted with `monotonic_constraints` are also
+        rejected, since the head refit would discard the constraints
+        (see docs/DECISIONS.md entry 21). `y` must be numeric 0/1, matching
+        the `group_metrics` contract used for the before/after trade-off.
         """
         est = self.estimator
         n_classes = len(getattr(est, "classes_", []))

@@ -102,6 +102,19 @@ def test_base_rate_requires_target() -> None:
         CalibratedFlagGAM(FlagGAMClassifier(), method="base_rate", cv=3).fit(X, y)
 
 
+def test_calibrated_flaggam_isotonic_string_labels() -> None:
+    X, y = _flaggam_data()
+    # np.unique sorts "bad" < "good", so class-1 (positive) is "good".
+    y_str = np.where(y == 1, "bad", "good")
+    cal = CalibratedFlagGAM(
+        FlagGAMClassifier(random_state=0), method="isotonic", cv=3
+    ).fit(X, y_str)
+    proba = cal.predict_proba(X)
+    assert proba.shape == (len(X), 2)
+    np.testing.assert_allclose(proba.sum(axis=1), 1.0, atol=1e-9)
+    assert set(cal.predict(X.head())) <= {"bad", "good"}
+
+
 def test_multiclass_rejected() -> None:
     X, _ = _flaggam_data(n=300)
     y3 = np.arange(300) % 3

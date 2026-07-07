@@ -101,6 +101,7 @@ rule-level audit that ranks bases by association with it:
 ```python
 from flaggam import ProxyAudit, group_metrics
 
+A = X["purpose"].astype(str)  # protected attribute (illustrative)
 metrics = group_metrics(y, clf.predict_proba(X)[:, 1], A)
 report = ProxyAudit(clf).report(X, A)          # ranked candidate proxies
 clean_clf, trade = ProxyAudit(clf).drop_proxies(X, y, A, threshold=0.3)

@@ -133,8 +133,12 @@ class CalibratedFlagGAM:
 
     def fit(self, X: Any, y: Any) -> "CalibratedFlagGAM":
         y = np.asarray(y).ravel()
-        if len(np.unique(y)) != 2:
+        classes = np.unique(y)
+        if len(classes) != 2:
             raise ValueError("CalibratedFlagGAM supports binary targets only")
+        # oof is P(class-1) from the estimator's LabelEncoder, whose sort order
+        # matches np.unique; encode y the same way so calibrators see numeric 0/1.
+        y01 = (y == classes[1]).astype(float)
         if self.method == "base_rate" and self.target_rate is None:
             raise ValueError("method='base_rate' requires target_rate")
         if self.method not in ("platt", "isotonic", "base_rate"):
@@ -142,12 +146,12 @@ class CalibratedFlagGAM:
         oof = self._oof_probs(X, y)
         if self.method == "platt":
             self.calibrator_: Any = LogisticRegression(C=1e6, solver="lbfgs").fit(
-                _logit(oof).reshape(-1, 1), y
+                _logit(oof).reshape(-1, 1), y01
             )
         elif self.method == "isotonic":
             self.calibrator_ = IsotonicRegression(
                 out_of_bounds="clip", y_min=0.0, y_max=1.0
-            ).fit(oof, y)
+            ).fit(oof, y01)
         else:  # base_rate
             logits = _logit(oof)
             self.calibrator_ = float(
