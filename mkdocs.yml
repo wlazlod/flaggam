@@ -37,6 +37,7 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Guidebook: notebooks/german_credit.ipynb
   - User Guide:
     - Rules & Screening: user-guide/rules-and-screening.md
     - Extensions: user-guide/extensions.md
