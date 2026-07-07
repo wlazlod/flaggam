@@ -132,3 +132,29 @@ Each entry references the source that drove the decision.
     ρ=0.50 corruption conditions (`miss50`/`noise50`), matching the more stressful of the two
     corruption levels used elsewhere (Table 5), rather than ρ=0.25.
     *(spec Table 7; consistent with Table 5's stress-test intent)*
+
+19. **PD calibration (`flaggam/calibration.py`): cross-fitting with a single pooled
+    calibrator; logit-space Platt; base_rate as a brentq logit offset; binary-only scope.**
+    `CalibratedFlagGAM` wraps any fitted-or-unfitted `FlagGAMClassifier`-compatible estimator
+    to recalibrate `P(y=1)`. For `cv=k` (int), `StratifiedKFold(k, shuffle=True,
+    random_state=0)` fits `sklearn.clone(estimator)` on each fold's k−1 training splits and
+    collects out-of-fold predictions; exactly one calibrator is then fitted on the pooled
+    out-of-fold predictions across all folds (not one calibrator per fold), and the final
+    `estimator_` is a fresh clone refit on the full `(X, y)`. This keeps the calibrator's
+    training data disjoint from the head-fitting data for every observation, satisfying the
+    no-leakage requirement, while still producing a single deployable calibrator rather than
+    an ensemble of fold-specific ones. `cv="prefit"` treats `estimator` as already fitted and
+    uses `(X, y)` passed to `fit()` purely as held-out calibration data, so the caller is
+    responsible for disjointness from whatever data trained `estimator`. All three methods
+    operate on the model logit `log(p/(1-p))` with `p` clipped to `[1e-12, 1-1e-12]` before
+    the log: `platt` fits a near-unregularized `LogisticRegression(C=1e6, solver="lbfgs")` of
+    `y` on the logit; `isotonic` fits `IsotonicRegression(out_of_bounds="clip", y_min=0.0,
+    y_max=1.0)` directly on `p`; `base_rate` solves for a scalar logit offset `delta` with
+    `scipy.optimize.brentq` on `[-30, 30]` such that `mean(expit(logit + delta))` equals
+    `target_rate` (raises `ValueError` if `target_rate` is not supplied), and applies that
+    offset to the final model's logits at predict time — an intercept shift estimated from
+    the leak-free pooled out-of-fold logits, so no per-fold pooling of the offset itself is
+    needed. `CalibratedFlagGAM` raises `ValueError` for non-binary targets: PD calibration is
+    defined only for `P(y=1)`. This module is an original addition; Zhao & Welsch (2026)
+    evaluates only ranking metrics and does not address probability calibration.
+    *(spec §8.1; original addition, not in paper)*
