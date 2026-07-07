@@ -7,6 +7,7 @@ fonts, or images), so the result is fully self-contained: it works offline and
 can be embedded in an iframe (e.g. the docs site) with no network access.
 """
 
+import html
 import json
 import logging
 from pathlib import Path
@@ -20,10 +21,15 @@ from .inspection import _ADDITIVE_HEADS
 logger = logging.getLogger(__name__)
 
 
-def _sig6(x: float) -> float:
-    """Round to 6 decimal places (keeps the embedded JSON payload small)."""
+def _sig6(x: float) -> float | None:
+    """Round to 6 decimal places (keeps the embedded JSON payload small).
+
+    Non-finite values (e.g. the `p_adj=nan` marker `core.py` uses for bases
+    without a p-value) are mapped to `None` so the payload always serializes
+    to valid JSON under `json.dumps(..., allow_nan=False)`.
+    """
     xf = float(x)
-    return xf if not np.isfinite(xf) else round(xf, 6)
+    return round(xf, 6) if np.isfinite(xf) else None
 
 
 def _feature_payload(
@@ -119,12 +125,12 @@ def export_rules_html(
         raise ValueError("export_rules_html requires the additive head")
 
     payload = _build_payload(estimator, title)
-    data = json.dumps(payload).replace("</", "<\\/")
-    html = _TEMPLATE.replace("{{TITLE}}", title).replace("{{DATA}}", data)
+    data = json.dumps(payload, allow_nan=False).replace("</", "<\\/")
+    doc = _TEMPLATE.replace("%%DATA%%", data).replace("%%TITLE%%", html.escape(title, quote=True))
 
     if path is not None:
-        Path(path).write_text(html, encoding="utf-8")
-    return html
+        Path(path).write_text(doc, encoding="utf-8")
+    return doc
 
 
 _TEMPLATE = """<!DOCTYPE html>
@@ -132,7 +138,7 @@ _TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{TITLE}}</title>
+<title>%%TITLE%%</title>
 <style>
 :root{color-scheme:light}
 *{box-sizing:border-box}
@@ -160,7 +166,7 @@ th{background:#fafafa;font-weight:600}
 </head>
 <body>
 <header>
-<h1>{{TITLE}}</h1>
+<h1>%%TITLE%%</h1>
 <div id="meta"></div>
 </header>
 <select id="feature"></select>
@@ -169,7 +175,7 @@ th{background:#fafafa;font-weight:600}
 <thead><tr><th>Rule</th><th>Weight</th><th>Support</th><th>adj. p-value</th></tr></thead>
 <tbody></tbody>
 </table>
-<script type="application/json" id="flaggam-data">{{DATA}}</script>
+<script type="application/json" id="flaggam-data">%%DATA%%</script>
 <script>
 const DATA = JSON.parse(document.getElementById("flaggam-data").textContent);
 const NS = document.getElementById("panel").namespaceURI;
@@ -181,23 +187,42 @@ function el(tag, attrs) {
   return e;
 }
 
-function fmtWeight(w) { return w.toFixed(3); }
-function fmtP(p) { return p < 0.001 ? p.toExponential(2) : p.toFixed(4); }
+function fmtWeight(w) { return w == null ? "—" : w.toFixed(3); }
+function fmtP(p) {
+  if (p == null) return "—";
+  return p < 0.001 ? p.toExponential(2) : p.toFixed(4);
+}
 
 function renderMeta() {
-  document.getElementById("meta").innerHTML =
-    `<span>task: ${DATA.task}</span><span>intercept: ${DATA.intercept.toFixed(3)}</span>` +
-    `<span>rules: ${DATA.n_rules}</span>`;
+  const meta = document.getElementById("meta");
+  meta.textContent = "";
+  const items = [
+    `task: ${DATA.task}`,
+    `intercept: ${DATA.intercept.toFixed(3)}`,
+    `rules: ${DATA.n_rules}`,
+  ];
+  for (const text of items) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    meta.appendChild(span);
+  }
 }
 
 function renderTable(rules) {
   const body = document.querySelector("#rules tbody");
-  body.innerHTML = "";
+  body.textContent = "";
   for (const r of rules) {
     const tr = document.createElement("tr");
-    const cls = r.weight >= 0 ? "pos" : "neg";
-    tr.innerHTML = `<td>${r.rule}</td><td class="${cls}">${fmtWeight(r.weight)}</td>` +
-      `<td>${r.support}</td><td>${fmtP(r.p_adj)}</td>`;
+    const ruleCell = document.createElement("td");
+    ruleCell.textContent = r.rule;
+    const weightCell = document.createElement("td");
+    weightCell.className = r.weight >= 0 ? "pos" : "neg";
+    weightCell.textContent = fmtWeight(r.weight);
+    const supportCell = document.createElement("td");
+    supportCell.textContent = r.support;
+    const pCell = document.createElement("td");
+    pCell.textContent = fmtP(r.p_adj);
+    tr.append(ruleCell, weightCell, supportCell, pCell);
     body.appendChild(tr);
   }
 }
@@ -277,7 +302,7 @@ function renderCategorical(svg, feat) {
 function render(name) {
   const feat = DATA.features.find(f => f.name === name);
   const svg = document.getElementById("panel");
-  svg.innerHTML = "";
+  svg.replaceChildren();
   if (feat.type === "numeric") renderNumeric(svg, feat); else renderCategorical(svg, feat);
   renderTable(feat.rules);
 }

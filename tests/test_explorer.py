@@ -138,3 +138,15 @@ def test_no_external_resources(fitted_clf) -> None:
     html = export_rules_html(clf)
     assert "http://" not in html
     assert "https://" not in html
+
+
+def test_title_is_escaped(fitted_clf) -> None:
+    clf, _, _ = fitted_clf
+    html = export_rules_html(clf, title="</title><script>x</script>")
+    assert "</title><script>" not in html
+    assert "&lt;/title&gt;" in html
+
+
+def test_no_innerhtml_in_template(fitted_clf) -> None:
+    clf, _, _ = fitted_clf
+    assert "innerHTML" not in export_rules_html(clf)
