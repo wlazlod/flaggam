@@ -92,7 +92,7 @@ feature. Because FlagGAM's numerical contributions are step/ramp bases,
 sign constraints give exact monotonicity:
 
 ```python
-clf = FlagGAMClassifier(monotonic_constraints={"age": -1}).fit(X, y)  # PD non-increasing in age
+clf_mono = FlagGAMClassifier(monotonic_constraints={"age": -1}).fit(X, y)  # PD non-increasing in age
 ```
 
 **Fairness / proxy audit** — group metrics for a protected attribute and a
