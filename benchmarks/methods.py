@@ -1,8 +1,6 @@
-"""Baseline method registry for the FlagGAM benchmark protocol (spec §10, Appendix A grids).
+"""Baseline method registry for the FlagGAM benchmark protocol (spec §10, Appendix A).
 
-Every Method.fit(X, y, seed): (1) carve train_val_split(X, y, seed, task);
-(2) pick hyperparameters on the validation carve; (3) refit on the FULL
-training data with the chosen hyperparameters. Test data never enters here.
+Every Method.fit carves train/val split, tunes on val, refits on full training. Test data excluded.
 """
 
 import logging
@@ -114,10 +112,9 @@ class Method:
 
 
 class LogisticMethod(Method):
-    """Logistic regression; per-candidate Pipeline = StandardScaler + OHE + LogisticRegression.
+    """Logistic regression: StandardScaler + OHE + LogisticRegression.
 
-    needs_imputation=True: runner fills NaN before calling fit; pipeline receives NaN-free input.
-    Tuning grid: C ∈ {0.01, 0.1, 1, 10}.
+    needs_imputation=True; tuning grid: C ∈ {0.01, 0.1, 1, 10}.
     """
 
     name = "logistic"
@@ -151,10 +148,9 @@ class LogisticMethod(Method):
 
 
 class RidgeMethod(Method):
-    """Ridge regression; per-candidate Pipeline = StandardScaler + OHE + Ridge.
+    """Ridge regression: StandardScaler + OHE + Ridge.
 
-    needs_imputation=True: runner fills NaN before calling fit.
-    Tuning grid: alpha ∈ {0.01, 0.1, 1, 10}.
+    needs_imputation=True; tuning grid: alpha ∈ {0.01, 0.1, 1, 10}.
     """
 
     name = "ridge"
