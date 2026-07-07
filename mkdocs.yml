@@ -59,6 +59,7 @@ nav:
     - Fairness: api/fairness.md
     - Plots: api/plots.md
   - Project:
+    - Changelog: changelog.md
     - Decisions: DECISIONS.md
     - Licensing: LICENSING.md
 
