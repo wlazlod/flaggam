@@ -2,6 +2,8 @@
 
 [![Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
+Documentation & guidebook: https://wlazlod.github.io/flaggam/ (available once the repository is public).
+
 FlagGAM is a method for building interpretable generalized additive models from tabular data.
 It works by first running a univariate screening pass — the Univariate Flagging Algorithm
 (Sheth et al., 2019) — that identifies threshold and category cuts where a feature's
@@ -170,6 +172,7 @@ uv sync --extra dev
 uv run pytest -q
 uv run ruff check .
 uv run mypy
+uv run mkdocs serve  # Preview documentation locally
 ```
 
 ## Status
