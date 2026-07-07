@@ -12,8 +12,8 @@ in this repository.
 
 The FlagGAM method is described in:
 
-> Zhao, X. & Welsch, R. E. (2026). *FlagGAM: Rule-Basis Generalized Additive Models.*
-> arXiv:2605.31189.
+> Zhao, Z. and Welsch, R. E. (2026). *FlagGAM: Rule-Basis Generalized Additive Models for
+> Explainable Tabular Prediction.* arXiv:2605.31189.
 
 The preprint PDF (`FlagGAM.pdf`) is **not** committed to this repository and is treated as
 all-rights-reserved.  No expression from that document has been reused in this codebase,
@@ -23,9 +23,9 @@ including documentation strings, comments, or variable names derived from verbat
 
 The Univariate Flagging Algorithm used in the screening step is described in:
 
-> Sheth, H. et al. (2019). *A univariate flagging algorithm for identifying patterns in clinical
-> data.* PLOS ONE 14(10): e0223161.
-> https://doi.org/10.1371/journal.pone.0223161
+> Sheth, M., Gerovitch, A., Welsch, R. E., Markuzon, N. (2019). *The Univariate Flagging
+> Algorithm (UFA): An interpretable approach for predictive modeling.* PLOS ONE 14(10):
+> e0223161. https://doi.org/10.1371/journal.pone.0223161
 
 This paper is published under the **Creative Commons Attribution (CC BY) 4.0** licence.
 The implementation follows the method as described; no text has been copied verbatim.

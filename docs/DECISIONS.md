@@ -33,7 +33,9 @@ Each entry references the source that drove the decision.
    The continuous response is discretised into tail vs. baseline by the threshold/category under
    test; the Welch t-test (unequal variances) tests whether the means differ.  Candidates are
    ranked by |SMD| so that effect size drives selection even when power varies.  The centered trend
-   term is added unconditionally and is not subject to screening.
+   term is added unconditionally and is not subject to screening.  Only the Welch t-test is
+   implemented in v1; the spec's "expose the test choice" parameter is deferred (documented
+   omission).
    *(spec §6.5; paper Fig. 1)*
 
 6. **Feature weights: point-biserial for binary, correlation ratio (η) for regression, Cramér's V for multiclass.**
@@ -68,9 +70,10 @@ Each entry references the source that drove the decision.
     *(paper states tail support only; extended symmetrically for robustness)*
 
 11. **Ties in same-side selection resolved by: larger effect → smaller p → lower cutoff.**
-    When two candidates have identical effect size and p-value the one with the lower (more
-    extreme) cutoff value is preferred.  This rule is fully deterministic and requires no
-    tie-breaking randomness.
+    When two candidates have identical effect size and p-value the one with the lower cutoff
+    value is preferred.  This rule is fully deterministic and requires no tie-breaking
+    randomness.  The lower-cutoff preference is more extreme on the low side (tighter low
+    tail) and less extreme on the high side (wider high tail).
     *(determinism requirement)*
 
 12. **`min_support` applies to categorical "rest" group.**
@@ -78,3 +81,10 @@ Each entry references the source that drove the decision.
     under test) must also satisfy `min_support`.  This ensures that the two-proportion test has
     adequate power on both sides and is consistent with decision 10 (symmetric support floor).
     *(extension of min_support semantics to level-vs-rest comparisons)*
+
+13. **Missing-indicator screening applies Benjamini–Hochberg across features.**
+    `discover_missing_indicators` generates one candidate per feature (one test each) and
+    applies BH correction across those candidates before filtering by `fdr_alpha`.  This
+    matches the per-feature-one-candidate structure in `missing.py`'s docstring.
+    *(implementation decision; paper is silent on multiple-comparison correction for missing
+    indicators)*

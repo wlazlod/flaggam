@@ -10,7 +10,7 @@ basis function ("flag"), and the flags together form a compact, human-readable r
 
 A linear or logistic head is then fitted on top of the rule basis, producing a model whose
 predictions are sums of individually interpretable flag contributions.  Because every flag
-corresponds to a concrete data condition (e.g., "age ≥ 55 and in the high-risk tail"), the
+corresponds to a concrete data condition (e.g., "age ≥ 55"), the
 resulting model supports exact rule extraction and feature-level attribution without
 approximation.
 
@@ -31,31 +31,43 @@ uv sync --extra dev
 
 ## Quickstart
 
+Rule discovery requires enough rows per tail (min_support).  The example below
+uses 600 synthetic rows with a planted signal so that `export_rules()` returns
+non-trivial rules.
+
 ```python
+import numpy as np
 import pandas as pd
 from flaggam import FlagGAMClassifier
 
-# Toy dataset
-df = pd.DataFrame({
-    "age":    [25, 45, 55, 62, 34, 70, 28, 51],
-    "income": [30, 55, 80, 95, 40, 110, 35, 75],
-})
-y = [0, 0, 1, 1, 0, 1, 0, 1]
+rng = np.random.default_rng(0)
+n = 600
+age = rng.normal(40, 10, n)
+purpose = rng.choice(["car", "tv", "edu"], n)
+logit = -1.5 + 2.0 * (age <= 30) + 1.5 * (purpose == "edu")
+y = (rng.uniform(size=n) < 1 / (1 + np.exp(-logit))).astype(int)
+X = pd.DataFrame({"age": age, "purpose": pd.Categorical(purpose)})
 
-# Fit
-clf = FlagGAMClassifier(random_state=0)
-clf.fit(df, y)
+clf = FlagGAMClassifier(random_state=0).fit(X, y)
 
-# Predict
-proba = clf.predict_proba(df)
-
-# Inspect the rule basis
+# Inspect the rule basis (5 rules on this seed)
 rules = clf.export_rules()
-print(rules)
+print(rules[["feature", "rule", "weight"]])
+#      feature             rule    weight
+#          age   age <= 27.4074  1.589593
+#          age   age >= 46.7581 -0.387614
+#      purpose purpose == 'edu'  0.906901
+#      purpose  purpose == 'tv' -0.418348
+#      purpose purpose == 'car' -0.486362
 
-# Attribution for one observation
-explanation = clf.explain(df.iloc[[3]])
+# Attribution for a young 'edu' applicant
+x_young = pd.DataFrame({"age": [22.0], "purpose": pd.Categorical(["edu"])})
+explanation = clf.explain(x_young)
 print(explanation)
+#    row     feature             rule  value  contribution
+#      0         age   age <= 27.4074    1.0      1.589593
+#      0     purpose purpose == 'edu'    1.0      0.906901
+#      0 <intercept>      <intercept>    1.0     -0.624096
 ```
 
 ## Citation
