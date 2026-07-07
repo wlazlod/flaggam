@@ -90,3 +90,12 @@ def test_point_biserial_for_numeric_A() -> None:
     est = FlagGAMClassifier(random_state=0).fit(X, y)
     report = ProxyAudit(est).report(X, A_num)
     assert (report["method"] == "point_biserial").all()
+
+
+def test_drop_proxies_rejects_monotonic_constraints() -> None:
+    X, y, A = _proxy_data()
+    est = FlagGAMClassifier(
+        monotonic_constraints={"income": -1}, random_state=0
+    ).fit(X, y)
+    with pytest.raises(ValueError, match="monotonic"):
+        ProxyAudit(est).drop_proxies(X, y, A, threshold=0.5)

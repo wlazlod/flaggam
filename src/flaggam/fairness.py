@@ -135,6 +135,11 @@ class ProxyAudit:
                 "drop_proxies requires a fitted binary classifier with "
                 "representation='full' and head='additive'"
             )
+        if est.monotonic_constraints is not None:
+            raise ValueError(
+                "drop_proxies does not support monotonic-constrained estimators "
+                "(the head refit would discard the constraints)"
+            )
         report = self.report(X, A, threshold=threshold)
         flagged_rules = set(report.loc[report.flagged, "rule"])
         y_arr = np.asarray(y).ravel()

@@ -252,13 +252,15 @@ Each entry references the source that drove the decision.
     2`) with `representation="full"` and `head="additive"`: compact-score
     columns are feature-weighted sums across multiple bases and don't map
     1:1 back to a single dropped basis, a `FlexibleHead` has no per-basis
-    coefficient to drop, and multiclass PD gaps are out of scope for this
-    module (consistent with `group_metrics` and `CalibratedFlagGAM`).  It
-    returns `(new_estimator, trade)` where `trade` is a one-row DataFrame of
-    `n_dropped`, `auroc_before/after`, and `dp_diff_before/after` (the
-    `demographic_parity_diff` gap from `group_metrics`), so a caller can see
-    the fairness/accuracy trade-off of the drop in one call. The original
-    estimator's `core_.bases_` is untouched because `drop_proxies` mutates
-    only the deep-copied `new_est.core_.bases_` list.
+    coefficient to drop, monotonic-constrained estimators are rejected (the
+    head refit would discard the constraints), and multiclass PD gaps are out
+    of scope for this module (consistent with `group_metrics` and
+    `CalibratedFlagGAM`).  It returns `(new_estimator, trade)` where `trade`
+    is a one-row DataFrame of `n_dropped`, `auroc_before/after`, and
+    `dp_diff_before/after` (the `demographic_parity_diff` gap from
+    `group_metrics`), so a caller can see the fairness/accuracy trade-off of
+    the drop in one call. The original estimator's `core_.bases_` is untouched
+    because `drop_proxies` mutates only the deep-copied `new_est.core_.bases_`
+    list.
     *(original addition, not in paper; operationalizes the paper's Impact
     Statement on proxy/bias risk in selected rules)*
