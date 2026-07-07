@@ -69,6 +69,27 @@ def test_plot_shape_rejects_compact_representation() -> None:
         plots.plot_shape(clf, "age")
 
 
+def test_plot_shape_rejects_multiclass() -> None:
+    X, _ = _synthetic()
+    y3 = np.arange(len(X)) % 3
+    clf = FlagGAMClassifier(random_state=0).fit(X, y3)
+    with pytest.raises(ValueError, match="binary"):
+        plots.plot_shape(clf, "age")
+
+
+def test_plot_shape_rejects_flexible_head() -> None:
+    from sklearn.ensemble import RandomForestClassifier
+
+    X, y = _synthetic()
+    clf = FlagGAMClassifier(
+        head="flexible",
+        flexible_estimator=RandomForestClassifier(n_estimators=5, random_state=0),
+        random_state=0,
+    ).fit(X, y)
+    with pytest.raises(ValueError, match="additive"):
+        plots.plot_shape(clf, "age")
+
+
 def test_plot_shape_monotonic_constrained_is_non_increasing() -> None:
     """A -1 constraint on age must yield a non-increasing shape curve."""
     rng = np.random.default_rng(1)
@@ -94,6 +115,19 @@ def test_plot_rule_importance_bar_count(fitted_clf) -> None:
     assert len(ax.patches) == min(2, n_rules)
     ax2 = plots.plot_rule_importance(clf, top_n=100)
     assert len(ax2.patches) == min(100, n_rules)
+
+
+def test_plot_rule_importance_rejects_flexible_head() -> None:
+    from sklearn.ensemble import RandomForestClassifier
+
+    X, y = _synthetic()
+    clf = FlagGAMClassifier(
+        head="flexible",
+        flexible_estimator=RandomForestClassifier(n_estimators=5, random_state=0),
+        random_state=0,
+    ).fit(X, y)
+    with pytest.raises(ValueError, match="additive"):
+        plots.plot_rule_importance(clf)
 
 
 # ---- plot_waterfall --------------------------------------------------------

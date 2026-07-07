@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from .calibration import reliability_curve
+from .inspection import _ADDITIVE_HEADS
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -50,6 +51,10 @@ def plot_shape(
             "plot_shape requires representation='full'; under 'compact' the head "
             "coefficients are per-class scores, not per-rule weights"
         )
+    if hasattr(estimator, "classes_") and len(estimator.classes_) > 2:
+        raise ValueError("plot_shape supports binary classification and regression only")
+    if not isinstance(estimator.head_, _ADDITIVE_HEADS):
+        raise ValueError("plot_shape requires the additive head")
     bases = estimator.core_.bases_
     coef = np.ravel(estimator.head_.coef_)
     feat_bases = [(j, b) for j, b in enumerate(bases) if b.feature == feature]
@@ -97,6 +102,8 @@ def plot_shape(
 def plot_rule_importance(estimator: Any, top_n: int = 20, ax: "Axes | None" = None) -> "Axes":
     """Horizontal bar chart of the top `top_n` rules by |weight| from `export_rules()`."""
     plt = _plt()
+    if not isinstance(estimator.head_, _ADDITIVE_HEADS):
+        raise ValueError("plot_rule_importance requires the additive head")
     rules = estimator.export_rules()
     top = rules.reindex(rules["weight"].abs().sort_values(ascending=False).index).head(top_n)
     if ax is None:

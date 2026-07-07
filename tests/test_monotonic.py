@@ -104,6 +104,16 @@ def test_bounds_for_bases_table() -> None:
     ]
 
 
+def test_bounds_for_bases_warns_on_unknown_kind(caplog) -> None:
+    from types import SimpleNamespace
+
+    weird = SimpleNamespace(feature="age", kind="weird_kind")
+    with caplog.at_level("WARNING", logger="flaggam.monotonic"):
+        bounds = bounds_for_bases([weird], {"age": 1})
+    assert bounds == [(None, None)]
+    assert any("not in the monotonicity sign table" in r.message for r in caplog.records)
+
+
 def test_export_rules_and_explain_on_constrained_fit() -> None:
     """Regression: monotonic-constrained heads must yield real weights on export."""
     X, y = _risky_young(n=800)

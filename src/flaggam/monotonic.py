@@ -37,6 +37,14 @@ def bounds_for_bases(bases: list, constraints: dict) -> list[tuple[float | None,
         direction = constraints.get(b.feature, 0)
         rule = _PLUS_ONE.get(b.kind)
         if direction == 0 or rule is None:  # unconstrained, categorical, or missing
+            if direction != 0 and b.kind not in ("category", "missing_indicator"):
+                logger.warning(
+                    "basis kind %r on constrained feature %r is not in the "
+                    "monotonicity sign table; leaving its coefficient unconstrained — "
+                    "monotonicity is no longer guaranteed",
+                    b.kind,
+                    b.feature,
+                )
             out.append(_FREE)
         elif direction == 1:
             out.append(rule)

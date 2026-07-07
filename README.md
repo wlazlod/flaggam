@@ -178,8 +178,9 @@ uv run mkdocs serve  # Preview documentation locally
 ## Status
 
 Feature-complete at 0.1.0: core estimators pass `check_estimator` with no exclusions; the
-benchmark suite reproduces the paper's protocol (the German Credit smoke gate lands within
-0.002 of the paper's reported AUROC); calibration, monotonicity, fairness, and visualization
+benchmark suite reproduces the paper's protocol (a 25-split German Credit smoke run
+reproduces the paper's 0.775 AUROC to within 0.002 (gate tolerance ±0.02)); calibration,
+monotonicity, fairness, and visualization
 extensions are implemented and documented.  See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
