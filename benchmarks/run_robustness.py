@@ -3,13 +3,15 @@
 import argparse
 from pathlib import Path
 
-from benchmarks.runner import RunConfig, add_common_args, run_benchmark
+from benchmarks.runner import RunConfig, _setup_logging, add_common_args, run_benchmark
 from flaggam.datasets import CLASSIFICATION
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Run the Table 5 robustness benchmark.")
-    add_common_args(p)
+    add_common_args(
+        p, conditions_help="Fixed to all five conditions for this runner; not overridable."
+    )
     p.set_defaults(out="benchmarks/results/robustness.csv")
     return p
 
@@ -21,6 +23,7 @@ def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
         argv: Command-line arguments (defaults to sys.argv[1:] if None).
         registry: Optional dataset registry for testing (injected by test harness).
     """
+    _setup_logging()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.conditions is not None:

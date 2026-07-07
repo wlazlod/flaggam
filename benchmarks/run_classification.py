@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from benchmarks.runner import RunConfig, add_common_args, run_benchmark
+from benchmarks.runner import RunConfig, _setup_logging, add_common_args, run_benchmark
 from flaggam.datasets import CLASSIFICATION
 
 
@@ -15,6 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
+    _setup_logging()
     args = build_parser().parse_args(argv)
     cfg = RunConfig(
         datasets=args.datasets or list(CLASSIFICATION),

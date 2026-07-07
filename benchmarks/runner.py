@@ -52,7 +52,10 @@ class RunConfig:
     out: Path
 
 
-def add_common_args(p: argparse.ArgumentParser) -> None:
+def add_common_args(
+    p: argparse.ArgumentParser,
+    conditions_help: str = "Corruption conditions to evaluate (default: clean only).",
+) -> None:
     """Register --datasets/--methods/--n-splits/--seed-start/--out/--conditions."""
     p.add_argument("--datasets", nargs="*", default=None, help="Registry keys (default: all).")
     p.add_argument(
@@ -68,7 +71,14 @@ def add_common_args(p: argparse.ArgumentParser) -> None:
         nargs="*",
         default=None,
         choices=_CONDITIONS,
-        help="Corruption conditions to evaluate (default: clean only).",
+        help=conditions_help,
+    )
+
+
+def _setup_logging() -> None:
+    """Configure console logging for CLI entry points (no-op if handlers exist)."""
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
 
 
@@ -99,6 +109,17 @@ def run_benchmark(
     overrides). cfg.methods filtering still applies; nothing lands in `skipped`.
     """
     reg = registry if registry is not None else (CLASSIFICATION if task == "binary" else REGRESSION)
+    unknown = [d for d in cfg.datasets if d not in reg]
+    if unknown:
+        raise ValueError(
+            f"unknown dataset(s) {unknown!r}; available: {sorted(reg)}"
+        )
+    if cfg.out.exists():
+        logger.warning(
+            "output file %s already exists; rows will be APPENDED (intended for "
+            "chunked --seed-start resumption). Delete the file first for a fresh run.",
+            cfg.out,
+        )
     if factories is None:
         factories, skipped = get_methods(task)
         for name, reason in skipped.items():

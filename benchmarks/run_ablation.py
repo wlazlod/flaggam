@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from benchmarks.methods import get_methods
-from benchmarks.runner import RunConfig, add_common_args, run_benchmark
+from benchmarks.runner import RunConfig, _setup_logging, add_common_args, run_benchmark
 
 _ABLATION_VARIANTS = [
     "flaggam_compact_equal",
@@ -34,6 +34,7 @@ def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
         argv: Command-line arguments (defaults to sys.argv[1:] if None).
         registry: Optional dataset registry for testing (injected by test harness).
     """
+    _setup_logging()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.conditions is not None:

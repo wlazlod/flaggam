@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from benchmarks.methods import flaggam_factory
-from benchmarks.runner import RunConfig, add_common_args, run_benchmark
+from benchmarks.runner import RunConfig, _setup_logging, add_common_args, run_benchmark
 
 # One-at-a-time overrides of the paper grid (spec Appendix A). Every value gets its
 # own labeled row, including values that coincide with a FlagGAM default; "default"
@@ -41,6 +41,7 @@ def main(argv: list[str] | None = None, registry: dict | None = None) -> None:
         argv: Command-line arguments (defaults to sys.argv[1:] if None).
         registry: Optional dataset registry for testing (injected by test harness).
     """
+    _setup_logging()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.conditions is not None:

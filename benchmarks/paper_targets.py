@@ -1,6 +1,6 @@
 """Spec §11 validation targets: the paper's reported means, cited for tolerance checks.
 
-These numbers are transcribed from PLAN.md §11 (Tables 3, 4, 5) and are used
+These numbers are transcribed from Zhao & Welsch, arXiv:2605.31189, Tables 3-5 and are used
 ONLY by render_tables.py to flag `|delta| > 0.010` between our reproduced
 numbers and the paper's reported means. They are never fed into any model.
 """

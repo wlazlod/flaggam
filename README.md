@@ -114,8 +114,11 @@ python -m benchmarks.run_sensitivity      # Table 8 (hyperparameter sensitivity)
 All runners default to `--n-splits 1000`, matching the paper, which takes hours per table.
 Pass `--n-splits 25` for a quick pass while developing or sanity-checking a change.
 
+Rows are always APPENDED to `--out` if it already exists (this supports chunked
+`--seed-start` resumption); delete the file first if you want a fresh run.
+
 ```bash
-python -m benchmarks.render_tables results/classification.csv --table 3
+python -m benchmarks.render_tables benchmarks/results/classification.csv --table 3
 ```
 
 `render_tables.py` compares a results CSV against the paper's reported values

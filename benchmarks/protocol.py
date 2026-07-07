@@ -1,6 +1,7 @@
 """Benchmark protocol: splits, tuning carve, corruption, imputation, tidy results.
 
-Implements spec PLAN.md §10. All randomness flows through explicit seeds /
+Implements the evaluation protocol of Zhao & Welsch, arXiv:2605.31189 (§10 of the
+paper's methodology). All randomness flows through explicit seeds /
 numpy Generators so that every method within a repeat sees identical splits
 and corruption masks.
 """
