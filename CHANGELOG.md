@@ -6,10 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-08
+
 ### Added
 
 - `export_rules_html`: self-contained interactive HTML rules explorer (feature dropdown, shape curves, rule table; no dependencies)
-- Documentation: detailed algorithm walkthrough with pipeline schema (`user-guide/algorithm.md`)
+- Documentation: detailed algorithm walkthrough with pipeline schema (`user-guide/algorithm.md`); the explorer embedded live on the visualization page and inline in the German Credit guidebook notebook
 
 ## [0.1.0] - 2026-07-07
 

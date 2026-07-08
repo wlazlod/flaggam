@@ -1,6 +1,6 @@
 [project]
 name = "flaggam"
-version = "0.1.0"
+version = "0.1.1"
 description = "FlagGAM: rule-basis generalized additive models for explainable tabular prediction (Zhao & Welsch, 2026; from-scratch implementation)."
 readme = "README.md"
 requires-python = ">=3.11"
