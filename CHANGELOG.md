@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: [S
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation restructured: flat navigation (Home / Getting started / How it works / Concepts / Tutorials / API reference / FAQ), a narrative "How it works" pipeline walkthrough with math and schema, per-topic concept pages, a single-page API reference, and a new FAQ
+
 ## [0.1.1] - 2026-07-08
 
 ### Added

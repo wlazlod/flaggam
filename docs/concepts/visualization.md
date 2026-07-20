@@ -30,7 +30,7 @@ lazy import helper first, raising a clear `ImportError` naming `pip install flag
 if matplotlib is not installed. Every function accepts an optional `ax` and returns the
 `Axes` it drew on, so plots compose with existing matplotlib figures.
 
-## Shape Function — `plot_shape`
+## Shape function — `plot_shape`
 
 Plots the fitted additive contribution for one feature: a step curve of contribution vs.
 value (with a rug of the discovered cutoffs) for numeric features, or one bar per
@@ -42,7 +42,7 @@ from flaggam import plot_shape
 ax = plot_shape(clf, "age")
 ```
 
-## Rule Importance — `plot_rule_importance`
+## Rule importance — `plot_rule_importance`
 
 Horizontal bar chart of the top-`N` rules by `|weight|`, read directly from
 `export_rules()`.
@@ -66,7 +66,7 @@ x_row = X.iloc[[0]]
 ax = plot_waterfall(clf, x_row, max_rules=15)
 ```
 
-## Reliability Diagram — `plot_reliability`
+## Reliability diagram — `plot_reliability`
 
 Mean predicted probability vs. observed positive fraction per bin, with a per-bin count
 overlay, built on `reliability_curve` from `flaggam.calibration`.
@@ -77,7 +77,7 @@ from flaggam import plot_reliability
 ax = plot_reliability(y_test, clf.predict_proba(X_test)[:, 1], n_bins=10)
 ```
 
-## Proxy Association — `plot_proxy_association`
+## Proxy association — `plot_proxy_association`
 
 Horizontal bars of rule-level association with a protected attribute, from a
 `ProxyAudit(...).report(...)` DataFrame; bars whose association exceeds the audit
@@ -90,7 +90,7 @@ report = ProxyAudit(clf).report(X, A)
 ax = plot_proxy_association(report, top_n=20)
 ```
 
-## Group Metrics — `plot_group_metrics`
+## Group metrics — `plot_group_metrics`
 
 Grouped bar chart of `selection_rate`, `tpr`, and `auroc` per level of a protected
 attribute, from a `group_metrics(...)` result; the title annotates the computed fairness
@@ -103,4 +103,4 @@ metrics = group_metrics(y_test, clf.predict_proba(X_test)[:, 1], A_test)
 ax = plot_group_metrics(metrics)
 ```
 
-See [Plots](../api/plots.md) for the full API reference.
+See the [API reference](../api.md#plots) for the full API.

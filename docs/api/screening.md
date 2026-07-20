@@ -1,3 +1,0 @@
-# Screening
-
-::: flaggam.screening

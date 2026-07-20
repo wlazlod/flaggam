@@ -1,12 +1,13 @@
-# Rules & Screening
+# Rules and screening
 
 FlagGAM turns each feature into a small set of binary "flags" — threshold, hinge, or
 category conditions — through a univariate screening pass, then fits a linear/logistic
-head on top of the resulting basis matrix `Z(X)`. This page explains how that screening
-pass works: the Univariate Flagging Algorithm (UFA), the multiple-testing correction
-applied across candidates, and the support floor that keeps individual rules statistically
-meaningful. See [Algorithm](algorithm.md) for the full walkthrough, including the pipeline
-schema and how the additive head is fit on top of the resulting basis matrix.
+head on top of the resulting basis matrix `Z(X)`. This page is the short introduction to
+that screening pass: the Univariate Flagging Algorithm (UFA), the multiple-testing
+correction applied across candidates, and the support floor that keeps individual rules
+statistically meaningful. [How it works](../how-it-works.md) is the full walkthrough,
+including the pipeline schema and how the additive head is fit on top of the resulting
+basis matrix.
 
 ## The Univariate Flagging Algorithm (UFA)
 
@@ -47,9 +48,9 @@ Each surviving candidate becomes one column of `Z(X)`, tagged with a `kind`:
 | `missing_indicator` | Indicator that the feature was missing for this row |
 
 `est.core_.bases_` holds the full list of fitted `Basis` objects (see the
-[Bases API](../api/bases.md)); each has `.feature`, `.kind`, `.name`, and a `.transform(x)`
-method, plus kind-specific attributes (`.cutoff`/`.side` for threshold/hinge bases,
-`.level` for category bases, `.mean` for trend bases).
+[API reference](../api.md#bases)); each has `.feature`, `.kind`, `.name`, and a
+`.transform(x)` method, plus kind-specific attributes (`.cutoff`/`.side` for
+threshold/hinge bases, `.level` for category bases, `.mean` for trend bases).
 
 ## Multiple-testing correction (BH-FDR)
 
@@ -82,5 +83,5 @@ Once fitted, `export_rules()` returns one row per surviving basis with its `feat
 `kind`, rendered `rule` string, `cutoff`/`level`, `support`, `effect_size`, `p_value`,
 `p_adj`, `enriched_class` (classification only), fitted `weight`, and whether the flag is
 `additive_interpretable`. `explain(X)` decomposes individual predictions the same way,
-listing the fired flags and their per-row contributions. See
-[Inspection](../api/inspection.md) for the full column reference.
+listing the fired flags and their per-row contributions. See the
+[API reference](../api.md#inspection) for the full column reference.

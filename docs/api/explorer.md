@@ -1,3 +1,0 @@
-# Explorer
-
-::: flaggam.explorer

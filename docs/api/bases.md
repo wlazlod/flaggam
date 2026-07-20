@@ -1,3 +1,0 @@
-# Bases
-
-::: flaggam.bases

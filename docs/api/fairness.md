@@ -1,3 +1,0 @@
-# Fairness
-
-::: flaggam.fairness

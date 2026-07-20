@@ -1,3 +1,0 @@
-# Estimators
-
-::: flaggam.estimator

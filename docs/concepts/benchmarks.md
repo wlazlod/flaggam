@@ -22,7 +22,7 @@ table. Pass `--n-splits 25` for a quick pass while developing or sanity-checking
 Rows are always **appended** to `--out` if it already exists (this supports chunked
 `--seed-start` resumption); delete the file first if you want a fresh run.
 
-## Comparing Against the Paper
+## Comparing against the paper
 
 ```bash
 python -m benchmarks.render_tables benchmarks/results/classification.csv --table 3
@@ -33,11 +33,11 @@ Welsch, arXiv:2605.31189, `benchmarks/paper_targets.py`) and flags deltas beyond
 tolerance. Results CSVs are written under `benchmarks/results/` and are gitignored — they
 are run artifacts, not tracked outputs.
 
-## Benchmark Protocol
+## Benchmark protocol
 
 The benchmark harness (`benchmarks/methods.py`, `benchmarks/_method_impls.py`) wraps
 FlagGAM alongside comparison methods (EBM, RuleFit, XGBoost, and others) behind a common
 `get_methods()` registry, so every runner exercises the same repeated-split, corruption,
 and imputation protocol regardless of which method is under test. Methods that are not
 installed are reported in a `skipped` dict with a human-readable reason rather than
-raising — see [`docs/DECISIONS.md`](../DECISIONS.md) for the `GLRM`/`aix360` example.
+raising — see [DECISIONS](../DECISIONS.md) for the `GLRM`/`aix360` example.

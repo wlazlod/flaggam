@@ -1,38 +1,26 @@
-# Getting Started
+# Getting started
 
-## Requirements
+## Install
 
-- Python >= 3.11
+```bash
+pip install flaggam                  # core: numpy, pandas, scipy, scikit-learn
+pip install "flaggam[viz]"           # + matplotlib plotting helpers
+```
 
-## Installation
-
-### From Source
+Python >= 3.11. For development, clone the repository and use the extras:
 
 ```bash
 git clone https://github.com/wlazlod/flaggam.git
 cd flaggam
-
-# Editable install
-pip install -e .
-
-# Or with uv
-uv sync --extra dev
+uv sync --extra dev                  # tests, linting, type checking
+uv sync --extra benchmarks           # paper-table reproduction runners
+uv sync --extra docs                 # this documentation site
 ```
 
-### Optional Extras
+## First model
 
-```bash
-uv sync --extra viz          # plotting helpers (matplotlib)
-uv sync --extra benchmarks   # paper-table reproduction runners
-uv sync --extra docs         # this documentation site
-```
-
-## Quick Start
-
-Rule discovery requires enough rows per tail (`min_support`). The example below uses 600
-synthetic rows with a planted signal so that `export_rules()` returns non-trivial rules.
-
-### 1. Fit an Estimator
+Rule discovery needs enough rows per tail (the `min_support` floor), so the example uses
+600 synthetic rows with a planted signal:
 
 ```python
 import numpy as np
@@ -50,7 +38,11 @@ X = pd.DataFrame({"age": age, "purpose": pd.Categorical(purpose)})
 clf = FlagGAMClassifier(random_state=0).fit(X, y)
 ```
 
-### 2. Inspect the Rule Basis
+Fitting runs the whole pipeline — candidate cutoffs, statistical screening with FDR
+correction, winner selection, and an L2-penalized logistic head on the surviving flags.
+[How it works](how-it-works.md) walks every stage.
+
+## Read the rules
 
 ```python
 rules = clf.export_rules()
@@ -63,11 +55,18 @@ print(rules[["feature", "rule", "weight"]])
 #      purpose purpose == 'car' -0.486362
 ```
 
-Each row of `export_rules()` is one discovered flag: `feature`, `kind`, the rendered
-`rule` string, its `cutoff`/`level`, `support`, `effect_size`, `p_value`/`p_adj`, and the
-fitted `weight`.
+Each row of `export_rules()` is one discovered flag:
 
-### 3. Explain a Prediction
+| Column | Meaning |
+|---|---|
+| `feature`, `kind` | source feature and basis kind (`threshold_low/high`, `category`, ...) |
+| `rule` | the rendered condition, e.g. `age <= 27.4074` |
+| `cutoff` / `level` | the numeric cutoff or categorical level |
+| `support` | rows satisfying the condition in the training data |
+| `effect_size`, `p_value`, `p_adj` | screening statistics; `p_adj` is BH-FDR adjusted |
+| `weight` | the fitted head coefficient — the flag's additive contribution |
+
+## Explain a prediction
 
 ```python
 x_young = pd.DataFrame({"age": [22.0], "purpose": pd.Categorical(["edu"])})
@@ -80,12 +79,27 @@ print(explanation)
 ```
 
 `explain(X)` decomposes each row's prediction into the flags that fired and their
-individual contribution; the intercept row uses `feature == "<intercept>"`.
+individual contribution; the printed contributions sum exactly to the model's logit for
+that row. The intercept row uses `feature == "<intercept>"`.
 
-## What's Next?
+## Visualize it
 
-- Learn how rules are discovered in [Rules & Screening](user-guide/rules-and-screening.md)
-- Explore [Extensions](user-guide/extensions.md): calibration, monotonicity, fairness
-- Reproduce the paper's tables with [Benchmarks](user-guide/benchmarks.md)
-- Plot fitted models with [Visualization](user-guide/visualization.md)
-- Browse the [API Reference](api/index.md)
+```python
+from flaggam import plot_shape, plot_rule_importance, export_rules_html
+
+plot_shape(clf, "age")               # fitted additive contribution vs. value
+plot_rule_importance(clf, top_n=20)  # top rules by |weight|
+export_rules_html(clf, path="rules.html")   # interactive explorer, opens in any browser
+```
+
+The plots need the `viz` extra; `export_rules_html` produces a single dependency-free
+HTML file — see [Visualization](concepts/visualization.md).
+
+## Where next
+
+- [How it works](how-it-works.md) — the pipeline from candidate cutoffs to the fitted
+  additive head.
+- [Concepts](concepts/rules-and-screening.md) — one page per topic: screening, missing
+  values, calibration, monotonicity, fairness, benchmarks, visualization.
+- [German Credit walkthrough](notebooks/german_credit.ipynb) — a runnable notebook.
+- [API reference](api.md).

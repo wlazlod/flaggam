@@ -1,3 +1,0 @@
-# Inspection
-
-::: flaggam.inspection
