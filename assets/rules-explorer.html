@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlagGAM rules — German Credit</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  margin:0;padding:1.5rem;background:#f7f7f9;color:#1a1a1a}
+header{margin-bottom:1rem}
+h1{font-size:1.3rem;margin:0 0 .4rem}
+#meta{color:#555;font-size:.9rem}
+#meta span{margin-right:1.2rem}
+select{font-size:1rem;padding:.3rem .5rem;margin-bottom:1rem;max-width:100%}
+.panel{background:#fff;border:1px solid #ddd;border-radius:6px;padding:.5rem;margin-bottom:1rem}
+svg{width:100%;height:auto;display:block}
+.axis-label{font-size:12px;fill:#333}
+.tick-label{font-size:11px;fill:#666}
+.zero-line{stroke:#999;stroke-width:1}
+.cutoff-line{stroke:#999;stroke-width:1;stroke-dasharray:4 3}
+.curve{fill:none;stroke:#2166ac;stroke-width:2}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #ddd;
+  border-radius:6px;overflow:hidden;font-size:.9rem}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid #eee}
+th{background:#fafafa;font-weight:600}
+.pos{color:#2166ac}
+.neg{color:#b2182b}
+</style>
+</head>
+<body>
+<header>
+<h1>FlagGAM rules — German Credit</h1>
+<div id="meta"></div>
+</header>
+<select id="feature"></select>
+<div class="panel"><svg id="panel" viewBox="0 0 700 360"></svg></div>
+<table id="rules">
+<thead><tr><th>Rule</th><th>Weight</th><th>Support</th><th>adj. p-value</th></tr></thead>
+<tbody></tbody>
+</table>
+<script type="application/json" id="flaggam-data">{"title": "FlagGAM rules \u2014 German Credit", "task": "binary", "intercept": -1.059009, "n_rules": 32, "features": [{"name": "age", "type": "numeric", "curve": {"x": [24.0, 24.060302, 24.120603, 24.180905, 24.241206, 24.301508, 24.361809, 24.422111, 24.482412, 24.542714, 24.603015, 24.663317, 24.723618, 24.78392, 24.844221, 24.904523, 24.964824, 25.025126, 25.085427, 25.145729, 25.20603, 25.266332, 25.326633, 25.386935, 25.447236, 25.507538, 25.567839, 25.628141, 25.688442, 25.748744, 25.809045, 25.869347, 25.929648, 25.98995, 26.050251, 26.110553, 26.170854, 26.231156, 26.291457, 26.351759, 26.41206, 26.472362, 26.532663, 26.592965, 26.653266, 26.713568, 26.773869, 26.834171, 26.894472, 26.954774, 27.015075, 27.075377, 27.135678, 27.19598, 27.256281, 27.316583, 27.376884, 27.437186, 27.497487, 27.557789, 27.61809, 27.678392, 27.738693, 27.798995, 27.859296, 27.919598, 27.979899, 28.040201, 28.100503, 28.160804, 28.221106, 28.281407, 28.341709, 28.40201, 28.462312, 28.522613, 28.582915, 28.643216, 28.703518, 28.763819, 28.824121, 28.884422, 28.944724, 29.005025, 29.065327, 29.125628, 29.18593, 29.246231, 29.306533, 29.366834, 29.427136, 29.487437, 29.547739, 29.60804, 29.668342, 29.728643, 29.788945, 29.849246, 29.909548, 29.969849, 30.030151, 30.090452, 30.150754, 30.211055, 30.271357, 30.331658, 30.39196, 30.452261, 30.512563, 30.572864, 30.633166, 30.693467, 30.753769, 30.81407, 30.874372, 30.934673, 30.994975, 31.055276, 31.115578, 31.175879, 31.236181, 31.296482, 31.356784, 31.417085, 31.477387, 31.537688, 31.59799, 31.658291, 31.718593, 31.778894, 31.839196, 31.899497, 31.959799, 32.020101, 32.080402, 32.140704, 32.201005, 32.261307, 32.321608, 32.38191, 32.442211, 32.502513, 32.562814, 32.623116, 32.683417, 32.743719, 32.80402, 32.864322, 32.924623, 32.984925, 33.045226, 33.105528, 33.165829, 33.226131, 33.286432, 33.346734, 33.407035, 33.467337, 33.527638, 33.58794, 33.648241, 33.708543, 33.768844, 33.829146, 33.889447, 33.949749, 34.01005, 34.070352, 34.130653, 34.190955, 34.251256, 34.311558, 34.371859, 34.432161, 34.492462, 34.552764, 34.613065, 34.673367, 34.733668, 34.79397, 34.854271, 34.914573, 34.974874, 35.035176, 35.095477, 35.155779, 35.21608, 35.276382, 35.336683, 35.396985, 35.457286, 35.517588, 35.577889, 35.638191, 35.698492, 35.758794, 35.819095, 35.879397, 35.939698, 36.0], "y": [0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.257356, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189, -0.302189]}, "cutoffs": [25.0, 35.0], "rules": [{"rule": "age <= 25", "kind": "threshold_low", "weight": 0.257356, "support": 190, "p_adj": 0.000939}, {"rule": "age >= 35", "kind": "threshold_high", "weight": -0.302189, "support": 452, "p_adj": 0.001168}]}, {"name": "credit_amount", "type": "numeric", "curve": {"x": [0.0, 92.087437, 184.174874, 276.262312, 368.349749, 460.437186, 552.524623, 644.61206, 736.699497, 828.786935, 920.874372, 1012.961809, 1105.049246, 1197.136683, 1289.224121, 1381.311558, 1473.398995, 1565.486432, 1657.573869, 1749.661307, 1841.748744, 1933.836181, 2025.923618, 2118.011055, 2210.098492, 2302.18593, 2394.273367, 2486.360804, 2578.448241, 2670.535678, 2762.623116, 2854.710553, 2946.79799, 3038.885427, 3130.972864, 3223.060302, 3315.147739, 3407.235176, 3499.322613, 3591.41005, 3683.497487, 3775.584925, 3867.672362, 3959.759799, 4051.847236, 4143.934673, 4236.022111, 4328.109548, 4420.196985, 4512.284422, 4604.371859, 4696.459296, 4788.546734, 4880.634171, 4972.721608, 5064.809045, 5156.896482, 5248.98392, 5341.071357, 5433.158794, 5525.246231, 5617.333668, 5709.421106, 5801.508543, 5893.59598, 5985.683417, 6077.770854, 6169.858291, 6261.945729, 6354.033166, 6446.120603, 6538.20804, 6630.295477, 6722.382915, 6814.470352, 6906.557789, 6998.645226, 7090.732663, 7182.820101, 7274.907538, 7366.994975, 7459.082412, 7551.169849, 7643.257286, 7735.344724, 7827.432161, 7919.519598, 8011.607035, 8103.694472, 8195.78191, 8287.869347, 8379.956784, 8472.044221, 8564.131658, 8656.219095, 8748.306533, 8840.39397, 8932.481407, 9024.568844, 9116.656281, 9208.743719, 9300.831156, 9392.918593, 9485.00603, 9577.093467, 9669.180905, 9761.268342, 9853.355779, 9945.443216, 10037.530653, 10129.61809, 10221.705528, 10313.792965, 10405.880402, 10497.967839, 10590.055276, 10682.142714, 10774.230151, 10866.317588, 10958.405025, 11050.492462, 11142.579899, 11234.667337, 11326.754774, 11418.842211, 11510.929648, 11603.017085, 11695.104523, 11787.19196, 11879.279397, 11971.366834, 12063.454271, 12155.541709, 12247.629146, 12339.716583, 12431.80402, 12523.891457, 12615.978894, 12708.066332, 12800.153769, 12892.241206, 12984.328643, 13076.41608, 13168.503518, 13260.590955, 13352.678392, 13444.765829, 13536.853266, 13628.940704, 13721.028141, 13813.115578, 13905.203015, 13997.290452, 14089.377889, 14181.465327, 14273.552764, 14365.640201, 14457.727638, 14549.815075, 14641.902513, 14733.98995, 14826.077387, 14918.164824, 15010.252261, 15102.339698, 15194.427136, 15286.514573, 15378.60201, 15470.689447, 15562.776884, 15654.864322, 15746.951759, 15839.039196, 15931.126633, 16023.21407, 16115.301508, 16207.388945, 16299.476382, 16391.563819, 16483.651256, 16575.738693, 16667.826131, 16759.913568, 16852.001005, 16944.088442, 17036.175879, 17128.263317, 17220.350754, 17312.438191, 17404.525628, 17496.613065, 17588.700503, 17680.78794, 17772.875377, 17864.962814, 17957.050251, 18049.137688, 18141.225126, 18233.312563, 18325.4], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002, 1.01002]}, "cutoffs": [9162.7], "rules": [{"rule": "credit_amount >= 9162.7", "kind": "threshold_high", "weight": 1.01002, "support": 50, "p_adj": 5.6e-05}]}, {"name": "duration_months", "type": "numeric", "curve": {"x": [1.8, 2.053266, 2.306533, 2.559799, 2.813065, 3.066332, 3.319598, 3.572864, 3.826131, 4.079397, 4.332663, 4.58593, 4.839196, 5.092462, 5.345729, 5.598995, 5.852261, 6.105528, 6.358794, 6.61206, 6.865327, 7.118593, 7.371859, 7.625126, 7.878392, 8.131658, 8.384925, 8.638191, 8.891457, 9.144724, 9.39799, 9.651256, 9.904523, 10.157789, 10.411055, 10.664322, 10.917588, 11.170854, 11.424121, 11.677387, 11.930653, 12.18392, 12.437186, 12.690452, 12.943719, 13.196985, 13.450251, 13.703518, 13.956784, 14.21005, 14.463317, 14.716583, 14.969849, 15.223116, 15.476382, 15.729648, 15.982915, 16.236181, 16.489447, 16.742714, 16.99598, 17.249246, 17.502513, 17.755779, 18.009045, 18.262312, 18.515578, 18.768844, 19.022111, 19.275377, 19.528643, 19.78191, 20.035176, 20.288442, 20.541709, 20.794975, 21.048241, 21.301508, 21.554774, 21.80804, 22.061307, 22.314573, 22.567839, 22.821106, 23.074372, 23.327638, 23.580905, 23.834171, 24.087437, 24.340704, 24.59397, 24.847236, 25.100503, 25.353769, 25.607035, 25.860302, 26.113568, 26.366834, 26.620101, 26.873367, 27.126633, 27.379899, 27.633166, 27.886432, 28.139698, 28.392965, 28.646231, 28.899497, 29.152764, 29.40603, 29.659296, 29.912563, 30.165829, 30.419095, 30.672362, 30.925628, 31.178894, 31.432161, 31.685427, 31.938693, 32.19196, 32.445226, 32.698492, 32.951759, 33.205025, 33.458291, 33.711558, 33.964824, 34.21809, 34.471357, 34.724623, 34.977889, 35.231156, 35.484422, 35.737688, 35.990955, 36.244221, 36.497487, 36.750754, 37.00402, 37.257286, 37.510553, 37.763819, 38.017085, 38.270352, 38.523618, 38.776884, 39.030151, 39.283417, 39.536683, 39.78995, 40.043216, 40.296482, 40.549749, 40.803015, 41.056281, 41.309548, 41.562814, 41.81608, 42.069347, 42.322613, 42.575879, 42.829146, 43.082412, 43.335678, 43.588945, 43.842211, 44.095477, 44.348744, 44.60201, 44.855276, 45.108543, 45.361809, 45.615075, 45.868342, 46.121608, 46.374874, 46.628141, 46.881407, 47.134673, 47.38794, 47.641206, 47.894472, 48.147739, 48.401005, 48.654271, 48.907538, 49.160804, 49.41407, 49.667337, 49.920603, 50.173869, 50.427136, 50.680402, 50.933668, 51.186935, 51.440201, 51.693467, 51.946734, 52.2], "y": [-1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, -1.157987, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043, 0.784043]}, "cutoffs": [6.0, 48.0], "rules": [{"rule": "duration_months <= 6", "kind": "threshold_low", "weight": -1.157987, "support": 82, "p_adj": 9.6e-05}, {"rule": "duration_months >= 48", "kind": "threshold_high", "weight": 0.784043, "support": 64, "p_adj": 5e-06}]}, {"name": "checking_status", "type": "categorical", "bars": [{"level": "A11", "weight": 1.012149}, {"level": "A12", "weight": 0.507463}, {"level": "A14", "weight": -0.650089}], "rules": [{"rule": "checking_status == 'A11'", "kind": "category", "weight": 1.012149, "support": 274, "p_adj": 0.0}, {"rule": "checking_status == 'A12'", "kind": "category", "weight": 0.507463, "support": 269, "p_adj": 0.000208}, {"rule": "checking_status == 'A14'", "kind": "category", "weight": -0.650089, "support": 394, "p_adj": 0.0}]}, {"name": "credit_history", "type": "categorical", "bars": [{"level": "A34", "weight": -0.573739}, {"level": "A30", "weight": 0.730616}, {"level": "A31", "weight": 0.605247}], "rules": [{"rule": "credit_history == 'A34'", "kind": "category", "weight": -0.573739, "support": 293, "p_adj": 0.0}, {"rule": "credit_history == 'A30'", "kind": "category", "weight": 0.730616, "support": 40, "p_adj": 1.2e-05}, {"rule": "credit_history == 'A31'", "kind": "category", "weight": 0.605247, "support": 49, "p_adj": 3.5e-05}]}, {"name": "employment_since", "type": "categorical", "bars": [{"level": "A74", "weight": -0.558398}, {"level": "A72", "weight": 0.202684}], "rules": [{"rule": "employment_since == 'A74'", "kind": "category", "weight": -0.558398, "support": 174, "p_adj": 0.040686}, {"rule": "employment_since == 'A72'", "kind": "category", "weight": 0.202684, "support": 172, "p_adj": 0.003833}]}, {"name": "foreign_worker", "type": "categorical", "bars": [{"level": "A201", "weight": 0.632982}, {"level": "A202", "weight": -0.654955}], "rules": [{"rule": "foreign_worker == 'A201'", "kind": "category", "weight": 0.632982, "support": 963, "p_adj": 0.009443}, {"rule": "foreign_worker == 'A202'", "kind": "category", "weight": -0.654955, "support": 37, "p_adj": 0.009443}]}, {"name": "housing", "type": "categorical", "bars": [{"level": "A152", "weight": -0.046598}, {"level": "A153", "weight": -0.245031}, {"level": "A151", "weight": 0.269656}], "rules": [{"rule": "housing == 'A152'", "kind": "category", "weight": -0.046598, "support": 713, "p_adj": 6.2e-05}, {"rule": "housing == 'A153'", "kind": "category", "weight": -0.245031, "support": 108, "p_adj": 0.009908}, {"rule": "housing == 'A151'", "kind": "category", "weight": 0.269656, "support": 179, "p_adj": 0.005017}]}, {"name": "other_installment_plans", "type": "categorical", "bars": [{"level": "A143", "weight": -0.574779}, {"level": "A141", "weight": -0.116851}], "rules": [{"rule": "other_installment_plans == 'A143'", "kind": "category", "weight": -0.574779, "support": 814, "p_adj": 0.001021}, {"rule": "other_installment_plans == 'A141'", "kind": "category", "weight": -0.116851, "support": 139, "p_adj": 0.003411}]}, {"name": "personal_status_sex", "type": "categorical", "bars": [{"level": "A93", "weight": -0.304766}, {"level": "A92", "weight": -0.044472}], "rules": [{"rule": "personal_status_sex == 'A93'", "kind": "category", "weight": -0.304766, "support": 548, "p_adj": 0.033946}, {"rule": "personal_status_sex == 'A92'", "kind": "category", "weight": -0.044472, "support": 310, "p_adj": 0.033946}]}, {"name": "property", "type": "categorical", "bars": [{"level": "A121", "weight": -0.404754}, {"level": "A124", "weight": 0.56655}], "rules": [{"rule": "property == 'A121'", "kind": "category", "weight": -0.404754, "support": 282, "p_adj": 0.000323}, {"rule": "property == 'A124'", "kind": "category", "weight": 0.56655, "support": 154, "p_adj": 0.00028}]}, {"name": "purpose", "type": "categorical", "bars": [{"level": "A43", "weight": -0.178412}, {"level": "A46", "weight": 0.700848}, {"level": "A40", "weight": 0.642131}, {"level": "A41", "weight": -0.804656}], "rules": [{"rule": "purpose == 'A43'", "kind": "category", "weight": -0.178412, "support": 280, "p_adj": 0.005052}, {"rule": "purpose == 'A46'", "kind": "category", "weight": 0.700848, "support": 50, "p_adj": 0.046666}, {"rule": "purpose == 'A40'", "kind": "category", "weight": 0.642131, "support": 234, "p_adj": 0.005092}, {"rule": "purpose == 'A41'", "kind": "category", "weight": -0.804656, "support": 103, "p_adj": 0.005092}]}, {"name": "savings_status", "type": "categorical", "bars": [{"level": "A65", "weight": -0.484634}, {"level": "A61", "weight": 0.271577}, {"level": "A63", "weight": -0.189768}, {"level": "A64", "weight": -0.687779}], "rules": [{"rule": "savings_status == 'A65'", "kind": "category", "weight": -0.484634, "support": 183, "p_adj": 0.000109}, {"rule": "savings_status == 'A61'", "kind": "category", "weight": 0.271577, "support": 603, "p_adj": 2e-06}, {"rule": "savings_status == 'A63'", "kind": "category", "weight": -0.189768, "support": 63, "p_adj": 0.031059}, {"rule": "savings_status == 'A64'", "kind": "category", "weight": -0.687779, "support": 48, "p_adj": 0.011159}]}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById("flaggam-data").textContent);
+const NS = document.getElementById("panel").namespaceURI;
+const yLabel = DATA.task === "binary" ? "contribution (log-odds)" : "contribution";
+
+function el(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+function fmtWeight(w) { return w == null ? "—" : w.toFixed(3); }
+function fmtP(p) {
+  if (p == null) return "—";
+  return p < 0.001 ? p.toExponential(2) : p.toFixed(4);
+}
+
+function renderMeta() {
+  const meta = document.getElementById("meta");
+  meta.textContent = "";
+  const items = [
+    `task: ${DATA.task}`,
+    `intercept: ${DATA.intercept.toFixed(3)}`,
+    `rules: ${DATA.n_rules}`,
+  ];
+  for (const text of items) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    meta.appendChild(span);
+  }
+}
+
+function renderTable(rules) {
+  const body = document.querySelector("#rules tbody");
+  body.textContent = "";
+  for (const r of rules) {
+    const tr = document.createElement("tr");
+    const ruleCell = document.createElement("td");
+    ruleCell.textContent = r.rule;
+    const weightCell = document.createElement("td");
+    weightCell.className = r.weight >= 0 ? "pos" : "neg";
+    weightCell.textContent = fmtWeight(r.weight);
+    const supportCell = document.createElement("td");
+    supportCell.textContent = r.support;
+    const pCell = document.createElement("td");
+    pCell.textContent = fmtP(r.p_adj);
+    tr.append(ruleCell, weightCell, supportCell, pCell);
+    body.appendChild(tr);
+  }
+}
+
+function renderNumeric(svg, feat) {
+  const W = 700, H = 360, mL = 60, mR = 20, mT = 20, mB = 50;
+  const xs = feat.curve.x, ys = feat.curve.y;
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(0, ...ys), yMax = Math.max(0, ...ys);
+  const sx = x => mL + (x - xMin) / (xMax - xMin || 1) * (W - mL - mR);
+  const sy = y => H - mB - (y - yMin) / (yMax - yMin || 1) * (H - mT - mB);
+
+  svg.appendChild(el("line", {class: "zero-line", x1: mL, x2: W - mR, y1: sy(0), y2: sy(0)}));
+  for (const c of feat.cutoffs) {
+    svg.appendChild(el("line", {
+      class: "cutoff-line", x1: sx(c), x2: sx(c), y1: mT, y2: H - mB,
+    }));
+  }
+  let d = `M${sx(xs[0])} ${sy(ys[0])}`;
+  for (let i = 1; i < xs.length; i++) {
+    d += ` L${sx(xs[i])} ${sy(ys[i - 1])} L${sx(xs[i])} ${sy(ys[i])}`;
+  }
+  svg.appendChild(el("path", {class: "curve", d}));
+
+  svg.appendChild(el("text", {class: "axis-label", x: W / 2, y: H - 10, "text-anchor": "middle"}))
+    .textContent = feat.name;
+  const yLbl = el("text", {
+    class: "axis-label", x: 14, y: H / 2, "text-anchor": "middle",
+    transform: `rotate(-90 14 ${H / 2})`,
+  });
+  yLbl.textContent = yLabel;
+  svg.appendChild(yLbl);
+  svg.appendChild(el("text", {class: "tick-label", x: mL, y: H - mB + 16})).textContent =
+    xMin.toFixed(2);
+  svg.appendChild(el("text", {
+    class: "tick-label", x: W - mR, y: H - mB + 16, "text-anchor": "end",
+  })).textContent = xMax.toFixed(2);
+  svg.appendChild(el("text", {class: "tick-label", x: mL - 6, y: sy(yMax), "text-anchor": "end"}))
+    .textContent = yMax.toFixed(2);
+  svg.appendChild(el("text", {class: "tick-label", x: mL - 6, y: sy(yMin), "text-anchor": "end"}))
+    .textContent = yMin.toFixed(2);
+}
+
+function renderCategorical(svg, feat) {
+  const W = 700, H = 360, mL = 60, mR = 20, mT = 20, mB = 60;
+  const bars = feat.bars;
+  const yMin = Math.min(0, ...bars.map(b => b.weight));
+  const yMax = Math.max(0, ...bars.map(b => b.weight));
+  const sy = y => H - mB - (y - yMin) / (yMax - yMin || 1) * (H - mT - mB);
+  const zeroY = sy(0);
+  const slot = (W - mL - mR) / bars.length;
+  svg.appendChild(el("line", {class: "zero-line", x1: mL, x2: W - mR, y1: zeroY, y2: zeroY}));
+  bars.forEach((b, i) => {
+    const x = mL + i * slot + slot * 0.15;
+    const barW = slot * 0.7;
+    const y = sy(Math.max(0, b.weight));
+    const barH = Math.abs(sy(b.weight) - zeroY);
+    svg.appendChild(el("rect", {
+      x, y, width: barW, height: Math.max(barH, 0),
+      fill: b.weight >= 0 ? "#2166ac" : "#b2182b",
+    }));
+    svg.appendChild(el("text", {
+      class: "tick-label", x: x + barW / 2, y: H - mB + 16, "text-anchor": "middle",
+    })).textContent = b.level;
+  });
+  svg.appendChild(el("text", {class: "axis-label", x: W / 2, y: H - 10, "text-anchor": "middle"}))
+    .textContent = feat.name;
+  const yLbl = el("text", {
+    class: "axis-label", x: 14, y: H / 2, "text-anchor": "middle",
+    transform: `rotate(-90 14 ${H / 2})`,
+  });
+  yLbl.textContent = yLabel;
+  svg.appendChild(yLbl);
+}
+
+function render(name) {
+  const feat = DATA.features.find(f => f.name === name);
+  const svg = document.getElementById("panel");
+  svg.replaceChildren();
+  if (feat.type === "numeric") renderNumeric(svg, feat); else renderCategorical(svg, feat);
+  renderTable(feat.rules);
+}
+
+function init() {
+  renderMeta();
+  const select = document.getElementById("feature");
+  for (const f of DATA.features) {
+    const opt = document.createElement("option");
+    opt.value = f.name;
+    opt.textContent = f.name;
+    select.appendChild(opt);
+  }
+  select.addEventListener("change", () => render(select.value));
+  if (DATA.features.length > 0) render(DATA.features[0].name);
+}
+
+init();
+</script>
+</body>
+</html>
